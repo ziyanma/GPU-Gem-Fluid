@@ -9,7 +9,7 @@ Shader "Custom/fire" {
 		_StepSize ("StepSize", Range(0.05, 1)) = 0.1
 	}
 	SubShader {
-		Tags { "RenderType"="Opaque" }
+		Tags { "Queue"="Transparent" }
 		LOD 200
 	Pass {
 		Cull front

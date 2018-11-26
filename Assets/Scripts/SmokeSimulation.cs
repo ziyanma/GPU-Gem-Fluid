@@ -33,7 +33,8 @@ public class SmokeSimulation : AnimationController {
     }
 
     // Update is called once per frame
-    void Update () {
+    protected void Update () {
+        base.Update();
         // Set up shader
         mat.SetVector("_Scale", transform.localScale);
         mat.SetVector("_Translate", transform.position);
