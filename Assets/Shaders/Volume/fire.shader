@@ -2,14 +2,11 @@
 
 // Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 Shader "Custom/fire" {
-		Properties {
-		_Color ("Color", Color) = (1,1,1,1)
+	Properties {
 		_Scale ("Scale", Vector) = (1,1,1)
 		_Translate ("Translate", Vector) = (1,1,1)
-
-		_MainTex ("Albedo (RGB)", 2D) = "white" {}
-		_Glossiness ("Smoothness", Range(0,1)) = 0.5
-		_Metallic ("Metallic", Range(0,1)) = 0.0
+		// 0 Step size would absolutely crash Unity
+		_StepSize ("StepSize", Range(0.05, 1)) = 0.1
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
@@ -25,6 +22,7 @@ Shader "Custom/fire" {
 			
 			float3 _Scale;
 			float3 _Translate;
+			float _StepSize;
 
 			struct v2f 
 			{
@@ -77,7 +75,8 @@ Shader "Custom/fire" {
 			{
 				float3 cameraPos = _WorldSpaceCameraPos;
 				float3 direction = normalize(IN.worldPos - cameraPos);
-				
+				float stepSize =  _StepSize > 0 ? _StepSize : 0.1f;
+
 				Ray ray;
 				ray.origin = cameraPos;
 				ray.dir = direction;
@@ -92,8 +91,6 @@ Shader "Custom/fire" {
 				// Ray marching
 				float3 rayStart = ray.origin + ray.dir * near;
 				float3 rayEnd = ray.origin + ray.dir * far;
-
-				float stepSize = 0.1f; // TODO: Change stepSize
 				
 				float dist = length(rayEnd - rayStart);
 				float3 ds = normalize(rayEnd - rayStart) * stepSize;
