@@ -56,8 +56,12 @@ Shader "Custom/fire" {
 			    return t0 <= t1;
 			}
 
-			bool sampleColor(float3 pos) {
-				return length(pos - _Translate) < 0.5f;
+			float4 sampleColor(float3 pos) {
+				if (length(pos - _Translate) < 0.5f) {
+					return float4(1.0, 0.0, 0.0, 0.1f);
+				} 
+
+				return float4(0.0, 0.0, 0.0, 0.0f);
 			}
 
 
@@ -97,13 +101,16 @@ Shader "Custom/fire" {
 				int numStep = dist / stepSize;
 				
 				float3 rayPos = rayStart;
+				
+				float4 FinalColor = float4(0.0, 0.0, 0.0, 0.0);
+				// FinalColor.rgb += sampleColor.rgb * sampleColor.a 
 				for (int i = 0; i < numStep; i++, rayPos += ds) {
-					if (sampleColor(rayPos)) {
-						return float4(1.0, 1.0, 1.0, 1.0);
-					}
+					float4 sample = sampleColor(rayPos);
+					FinalColor.xyz += sample.xyz * sample.a * (1 - FinalColor.a);
+					FinalColor.a += sample.a * (1 - FinalColor.a);
 				}
 
-				return float4(1.0, 0.0, 0.0, 1.0);
+				return FinalColor;
 			}
 			
 			ENDCG
