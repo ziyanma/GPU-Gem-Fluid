@@ -16,6 +16,7 @@ Shader "Custom/fire" {
     	Blend SrcAlpha OneMinusSrcAlpha
 		CGPROGRAM
 			#include "UnityCG.cginc"
+
 			#pragma target 5.0
 			#pragma vertex vert
 			#pragma fragment frag

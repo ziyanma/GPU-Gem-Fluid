@@ -1,0 +1,24 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#include "numthread.cginc"
+
+float4 _GridSize;
+RWTexture3D<float> Result;
+
+[numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float obstacle = 0;
+    
+    if(id.x-1 < 0) obstacle = 1;
+    if(id.x+1 > (int)_GridSize.x-1) obstacle = 1;
+    
+    if(id.y-1 < 0) obstacle = 1;
+    if(id.y+1 > (int)_GridSize.y-1) obstacle = 1;
+    
+    if(id.z-1 < 0) obstacle = 1;
+    if(id.z+1 > (int)_GridSize.z-1) obstacle = 1;
+    
+    Result[id.xyz] = obstacle;
+}
