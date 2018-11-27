@@ -14,6 +14,7 @@ public class SmokeSimulation : AnimationController {
 	public ComputeShader computeObstacle;
 	public ComputeShader computeAdvection;
 	public ComputeShader computeJacobi;
+    public ComputeShader computeDivergence;
     public ComputeShader computeBuoyancy;
 	public ComputeShader computeImpulse;
 	public ComputeShader computeProjection;
@@ -25,7 +26,7 @@ public class SmokeSimulation : AnimationController {
 	//privates
 	RenderTexture mObstacle;
 	RenderTexture mDivergence;
-	RenderTexture mPressure;
+	RenderTexture [] mPressure = new RenderTexture[2];
 	RenderTexture [] mDensity = new RenderTexture[2];
 	RenderTexture [] mTemperature  = new RenderTexture[2];
 	RenderTexture [] mVelocity  = new RenderTexture[2];
@@ -39,18 +40,12 @@ public class SmokeSimulation : AnimationController {
         //initialize 3D buffers
         initialize3DTexture(mDensity, RenderTextureFormat.RFloat);
 		initialize3DTexture(mTemperature, RenderTextureFormat.RFloat);
-		
+		initialize3DTexture(mPressure, RenderTextureFormat.RFloat);
 		initialize3DTexture(mVelocity, RenderTextureFormat.ARGB32);
 
 		//no readwrite 
 		mDivergence = initializeRenderTexture(RenderTextureFormat.RFloat);
-		mPressure = initializeRenderTexture(RenderTextureFormat.RFloat);
-        mObstacle = new RenderTexture(texRes[0], texRes[1], 0, RenderTextureFormat.RFloat); // To Alpha 8
-        mObstacle.enableRandomWrite = true;
-        mObstacle.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-        mObstacle.isPowerOfTwo = true;
-        mObstacle.volumeDepth = texRes[2];
-        mObstacle.Create();
+        mObstacle = initializeRenderTexture(RenderTextureFormat.RFloat);
 
         InitializeObstacle();
         
@@ -91,7 +86,8 @@ public class SmokeSimulation : AnimationController {
 		mVelocity[READ].Release();
 		mVelocity[WRITE].Release();
 		mDivergence.Release();
-		mPressure.Release();
+		mPressure[READ].Release();
+		mPressure[WRITE].Release();
 	}
 
 	//helpers
@@ -183,20 +179,31 @@ public class SmokeSimulation : AnimationController {
 
 	void ComputeDivergence()
 	{
-		computeJacobi.SetTexture(computeJacobi.FindKernel("CSMain"), 
-									"_Velocity",
-									mVelocity[READ]);
-        computeJacobi.Dispatch(computeObstacle.FindKernel("CSMain"), 
-                                texRes.x / NUMTHREADS, 
-                                texRes.y / NUMTHREADS, 
-                                texRes.z / NUMTHREADS);
+		int kernel = computeDivergence.FindKernel("CSMain");
+		computeDivergence.SetTexture(kernel, "_Velocity", mVelocity[READ]);
+        computeDivergence.SetTexture(kernel, "_WRITE", mDivergence);
+        computeDivergence.Dispatch(kernel, texRes.x / NUMTHREADS, 
+                                			texRes.y / NUMTHREADS, 
+                              			 	texRes.z / NUMTHREADS);
+	}
+
+	void ComputePressure() 
+	{
+		int kernel = computeJacobi.FindKernel("CSMain");
+		computeJacobi.SetTexture(kernel, "_Pressure", mPressure[READ]);
+		computeJacobi.SetTexture(kernel, "_Divergence", mDivergence);
+        computeJacobi.SetTexture(kernel, "_WRITE", mPressure[WRITE]);
+        computeJacobi.Dispatch(kernel, texRes.x / NUMTHREADS, 
+                                		texRes.y / NUMTHREADS, 
+                                		texRes.z / NUMTHREADS);
+		SwapBuffer(mPressure);
 	}
 
 	void Project()
 	{
 		int kernel = computeProjection.FindKernel("CSMain");
 		computeProjection.SetTexture(kernel, "_Obstacle", mObstacle);
-		computeProjection.SetTexture(kernel, "_Pressure", mPressure);
+		computeProjection.SetTexture(kernel, "_Pressure", mPressure[READ]);
 		computeProjection.SetTexture(kernel, "_Velocity", mVelocity[READ]);
 		computeProjection.SetTexture(kernel, "_WRITE", mVelocity[WRITE]);
 		computeJacobi.Dispatch(kernel, texRes.x / NUMTHREADS, 
