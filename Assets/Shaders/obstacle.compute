@@ -21,5 +21,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if(id.z <= 0) obstacle = 1;
     if(id.z >= z-1) obstacle = 1;
     
-    Result[id.xyz] = obstacle;
+    Result[id] = obstacle;
 }
