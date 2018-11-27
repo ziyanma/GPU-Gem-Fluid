@@ -1,0 +1,29 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#include "numthread.cginc"
+Texture3D<float> _Obstacle;
+#include "interpolation.cginc"
+Texture3D _Pressure;
+Texture3D _Velocity;
+RWTexture3D<float4> Result;
+
+[numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	float pL = _Pressure[uint3(id.x-1, id.y, id.z)];
+    float pR = _Pressure[uint3(id.x+1, id.y, id.z)];
+    
+    float pB = _Pressure[uint3(id.x, id.y-1, id.z)];
+    float pT = _Pressure[uint3(id.x, id.y+1, id.z)];
+    
+    float pD = _Pressure[uint3(id.x, id.y, id.z -1)];
+    float pU = _Pressure[uint3(id.x, id.y, id.z +1)];
+
+	float3 gradP = 0.5*float3(pR - pL, pT - pB, pU - pD);
+	// Project the velocity onto its divergence-free component by
+	// subtracting the gradient of pressure.
+	float3 vOld = SampleBilinearRGBA(id.xyz, _Velocity).xyz;
+	float3 vNew = vOld - gradP;
+	Result[id.xyz] =  float4(vNew, 0);
+}
