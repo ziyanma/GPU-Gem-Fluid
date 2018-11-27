@@ -194,6 +194,7 @@ public class SmokeSimulation : AnimationController {
 		int kernel = computeJacobi.FindKernel("CSMain");
 		computeJacobi.SetTexture(kernel, "_Pressure", mPressure[READ]);
 		computeJacobi.SetTexture(kernel, "_Divergence", mDivergence);
+		computeJacobi.SetTexture(kernel, "_Obstacle", mObstacle);
         computeJacobi.SetTexture(kernel, "_WRITE", mPressure[WRITE]);
         computeJacobi.Dispatch(kernel, texRes.x / NUMTHREADS, 
                                 		texRes.y / NUMTHREADS, 

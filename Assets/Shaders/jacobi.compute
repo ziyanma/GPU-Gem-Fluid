@@ -4,6 +4,7 @@
 
 Texture3D<float> _Pressure;
 Texture3D<float> _Divergence;
+Texture3D<float> _Obstacle;
 RWTexture3D<float> _WRITE;
 
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
@@ -12,15 +13,35 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	// divergence at center cell.
 	float selfDivergence = _Pressure[id];
 
+    uint3 L = uint3(id.x-1, id.y, id.z);
+    uint3 R = uint3(id.x+1, id.y, id.z);
+
+    uint3 B = uint3(id.x, id.y-1, id.z);
+    uint3 T = uint3(id.x, id.y+1, id.z);
+
+    uint3 D = uint3(id.x, id.y, id.z -1);
+    uint3 U = uint3(id.x, id.y, id.z +1);
+
 	// Get pressure values from neighboring cells.
-	float pL = _Pressure[uint3(id.x-1, id.y, id.z)];
-    float pR = _Pressure[uint3(id.x+1, id.y, id.z)];
+	float pL = _Pressure[L];
+    float pR = _Pressure[R];
     
-    float pB = _Pressure[uint3(id.x, id.y-1, id.z)];
-    float pT = _Pressure[uint3(id.x, id.y+1, id.z)];
+    float pB = _Pressure[B];
+    float pT = _Pressure[T];
     
-    float pD = _Pressure[uint3(id.x, id.y, id.z -1)];
-    float pU = _Pressure[uint3(id.x, id.y, id.z +1)];
+    float pD = _Pressure[D];
+    float pU = _Pressure[U];
+
+    float centerP = _Pressure[id];
+
+    if(_Obstacle[L] > 0.1) pL = centerP;
+    if(_Obstacle[R] > 0.1) pR = centerP;
+
+    if(_Obstacle[B] > 0.1) pB = centerP;
+    if(_Obstacle[T] > 0.1) pT = centerP;
+
+    if(_Obstacle[D] > 0.1) pD = centerP;
+    if(_Obstacle[U] > 0.1) pU = centerP;
 
 	_WRITE[id.xyz] = (pL + pR + pB + pT + pU + pD - selfDivergence) / 6.0; 
 }
