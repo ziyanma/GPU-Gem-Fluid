@@ -29,6 +29,7 @@ void AdvectVelocity (uint3 id : SV_DispatchThreadID)
 	
 	_WriteVelocity[id] = _Read[int3(pos)];
 	// _WriteVelocity[id] = SampleBilinearRGBA(pos, _ReadVelocity);
+
 }
 
 #pragma kernel Advect

@@ -43,5 +43,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if(_Obstacle[D] > 0.1) pD = centerP;
     if(_Obstacle[U] > 0.1) pU = centerP;
 
-	_WRITE[id.xyz] = (pL + pR + pB + pT + pU + pD - selfDivergence) / 6.0; 
+	_WRITE[id] = (pL + pR + pB + pT + pU + pD - selfDivergence) / 6.0; 
 }
