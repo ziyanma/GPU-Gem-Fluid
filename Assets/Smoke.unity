@@ -471,7 +471,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 1f5fa4330a9877147baa9dd50eeb56d8, type: 2}
+  - {fileID: 2100000, guid: 29f281afb1991314687fcee1c0fca35a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -534,12 +534,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3c01bd080fb86a41a38c564a275956e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isPlaying: 0
-  mat: {fileID: 2100000, guid: 1f5fa4330a9877147baa9dd50eeb56d8, type: 2}
+  isPlaying: 1
+  mat: {fileID: 2100000, guid: 29f281afb1991314687fcee1c0fca35a, type: 2}
   computeObstacle: {fileID: 7200000, guid: 655351c57baa19b4f896cf2fa4260f17, type: 3}
   computeAdvection: {fileID: 7200000, guid: 23267d23940f188429a265f1140a59d9, type: 3}
   computeJacobi: {fileID: 7200000, guid: a453b81383cbe447c896e5366ffde989, type: 3}
+  computeDivergence: {fileID: 7200000, guid: 6ee82ebc911b947eebd0eff3dc85a851, type: 3}
   computeBuoyancy: {fileID: 7200000, guid: 787e22e8ebdaa9e47abac84409138162, type: 3}
+  computeImpulse: {fileID: 7200000, guid: dadce24fe529e45d1bd33ca873dfebe4, type: 3}
+  computeProjection: {fileID: 7200000, guid: 9d6c8683d3ed3475ebfca71a4d2cca95, type: 3}
   width: 64
   height: 64
   depth: 64
@@ -837,7 +840,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1797101168}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 1, z: -5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

@@ -19,7 +19,7 @@ public class AnimationController : MonoBehaviour {
 	protected virtual void Update () {
 	    if (isPlaying)
         {
-            NextFrame(Time.deltaTime);
-        }	
+            NextFrame(0.1f);
+        }
 	}
 }

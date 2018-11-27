@@ -1,5 +1,7 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel AdvectVelocity
+#pragma kernel Advect
+
 #include "numthread.cginc"
 
 Texture3D<float> _Obstacle;

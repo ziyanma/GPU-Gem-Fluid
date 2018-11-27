@@ -50,6 +50,7 @@ public class SmokeSimulation : AnimationController {
         InitializeObstacle();
         
         mat.SetTexture("_Obstacle", mObstacle);
+		
     }
 
     // Update is called once per frame
@@ -59,6 +60,8 @@ public class SmokeSimulation : AnimationController {
         mat.SetVector("_Scale", transform.localScale);
         mat.SetVector("_Translate", transform.position);
         mat.SetTexture("_Obstacle", mObstacle);
+		mat.SetTexture("_Density", mDensity[0]);
+		mat.SetVector("_SmokeColor", new Vector4(0, 0, 0, 1));
     }
 
     public override void NextFrame(float dt)
