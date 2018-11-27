@@ -19,9 +19,9 @@ public class SmokeSimulation : AnimationController {
 	public ComputeShader computeImpulse;
 	public ComputeShader computeProjection;
 	
-	public int width = 64;
-	public int height = 64;
-	public int depth = 64;
+	public int width = 128;
+	public int height = 128;
+	public int depth = 128;
 
 	//privates
 	RenderTexture mObstacle;
@@ -60,8 +60,8 @@ public class SmokeSimulation : AnimationController {
         mat.SetVector("_Scale", transform.localScale);
         mat.SetVector("_Translate", transform.position);
         mat.SetTexture("_Obstacle", mObstacle);
-		mat.SetTexture("_Density", mDensity[0]);
-		mat.SetVector("_SmokeColor", new Vector4(0, 0, 0, 1));
+		mat.SetTexture("_Density", mDensity[READ]);
+		mat.SetVector("_SmokeColor", new Vector4(0.5f, 0.5f, 0.5f, 0.5f));
     }
 
     public override void NextFrame(float dt)
