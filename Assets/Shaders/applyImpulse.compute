@@ -1,0 +1,22 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#include "numthread.cginc"
+
+float _DeltaTime;
+Texture3D <float> _READ;
+RWTexture3D<float> _WRITE;
+
+[numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	uint x, y, z;
+	_READ.GetDimensions(x, y, z);
+	//define source pose:
+	float3 sourcePos = float3(x/2, y/2, 1);
+	float3 dist = id.xyz - sourcePos;
+	float squareRad = length(dist);
+	float amount = exp(-dist/squareRad) * _DeltaTime;
+
+	_WRITE[id.xyz] = _READ[id.xyz] + amount;
+}
