@@ -64,7 +64,8 @@ public class SmokeSimulation : AnimationController {
         mat.SetVector("_Translate", transform.position);
         mat.SetTexture("_Obstacle", mObstacle);
 		// mat.SetTexture("_Density", mVelocity[READ]);
-		mat.SetTexture("_Density", mDensity[READ]);
+		mat.SetTexture("_Density", mPressure[READ]);
+		// mat.SetTexture("_Density", mDivergence);
 		
 		mat.SetVector("_SmokeColor", new Vector4(0.5f, 0.5f, 0.5f, 0.5f));
     }
@@ -81,7 +82,7 @@ public class SmokeSimulation : AnimationController {
 
 		ComputeDivergence();
 		ComputePressure();
-		Project();
+		// Project();
     }
 
 
@@ -106,6 +107,7 @@ public class SmokeSimulation : AnimationController {
         newTex.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
         newTex.volumeDepth = texRes[2];
         newTex.isPowerOfTwo = true;
+		newTex.wrapMode = TextureWrapMode.Clamp;
         newTex.Create();
 		return newTex;
 	}

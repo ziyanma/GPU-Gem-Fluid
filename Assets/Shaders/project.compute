@@ -19,12 +19,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float pB = _Pressure[uint3(id.x, id.y-1, id.z)];
     float pT = _Pressure[uint3(id.x, id.y+1, id.z)];
     
-    float pD = _Pressure[uint3(id.x, id.y, id.z -1)];
-    float pU = _Pressure[uint3(id.x, id.y, id.z +1)];
+    float pD = _Pressure[uint3(id.x, id.y, id.z-1)];
+    float pU = _Pressure[uint3(id.x, id.y, id.z+1)];
 
 	// Project the velocity onto its divergence-free component by
 	// subtracting the gradient of pressure.
-	// float3 vOld = SampleBilinearRGBA(id, _Velocity).xyz;
+	// float3 vOld =  SampleBilinearRGBA(id, _Velocity).xyz;
 	float4 vMask = float4(1,1,1,1);
 	if (_Obstacle[uint3(id.x-1, id.y, id.z)] > 0.1) {
 		pL = pC; vMask.x = 0;	
@@ -44,7 +44,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	if (_Obstacle[uint3(id.x, id.y, id.z+1)] > 0.1) {
 		pU = pC; vMask.z = 0;	
 	}
-	float3 gradP = 0.5*float3(pR - pL, pT - pB, pU - pD);
+	float3 gradP = 0.5 * float3(pR - pL, pT - pB, pU - pD);
 
 	float3 vOld = _Velocity[id].xyz;
 	float3 vNew = vOld - gradP;
