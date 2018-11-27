@@ -7,7 +7,7 @@ public class SmokeSimulation : AnimationController {
 	const int READ = 0;
 	const int WRITE = 1;
 	const int NUMTHREADS = 8; // Make sure to change numthread.cginc as well
-	const float Time_step = 0.1f;
+	const float TIME_STEP = 0.1f;
 
 	//material & shader
 	public Material mat;
