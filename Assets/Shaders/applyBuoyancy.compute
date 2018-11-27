@@ -1,0 +1,43 @@
+#pragma kernel CSMain
+#define NUM_THREADS 8
+
+float4 _Size;
+float3 _Up;
+float _AmbientTemperature, _DeltaTime, _Buoyancy, _Mass;
+
+RWTexture3D<float3> _Velocity;
+Texture3D<float> _Density, _Temperature;
+
+[numthreads(NUM_THREADS,NUM_THREADS,NUM_THREADS)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{   
+    float T = _Temperature[id];
+    float D = _Density[id];
+    float3 V = _Velocity[id];
+    
+    // 1 / T0 - 1 / T in GPU Gem
+    V += (_DeltaTime * (T - _AmbientTemperature) * _Buoyancy - D * _Mass) * _Up.xyz;
+    
+    _Velocity[id.xyz] = V;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -11,17 +11,17 @@ RWTexture3D<float> Result;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	// divergence at center cell.
-	float selfDivergence = _Pressure.Sample(ps_linear_clamp_sampler, id.xyz);
+	float selfDivergence = _Pressure[id.xyz];
 
 	// Get pressure values from neighboring cells.
-	float pL = _Pressure.Sample(ps_linear_clamp_sampler, uint3(id.x-1, id.y, id.z));
-    float pR = _Pressure.Sample(ps_linear_clamp_sampler, uint3(id.x+1, id.y, id.z));
+	float pL = _Pressure[uint3(id.x-1, id.y, id.z)];
+    float pR = _Pressure[uint3(id.x+1, id.y, id.z)];
     
-    float pB = _Pressure.Sample(ps_linear_clamp_sampler, uint3(id.x, id.y-1, id.z));
-    float pT = _Pressure.Sample(ps_linear_clamp_sampler, uint3(id.x, id.y+1, id.z));
+    float pB = _Pressure[uint3(id.x, id.y-1, id.z)];
+    float pT = _Pressure[uint3(id.x, id.y+1, id.z)];
     
-    float pD = _Pressure.Sample(ps_linear_clamp_sampler, uint3(id.x, id.y, id.z -1));
-    float pU = _Pressure.Sample(ps_linear_clamp_sampler, uint3(id.x, id.y, id.z +1));
+    float pD = _Pressure[uint3(id.x, id.y, id.z -1)];
+    float pU = _Pressure[uint3(id.x, id.y, id.z +1)];
 
 	Result[id.xyz] = (pL + pR + pB + pT + pU + pD - selfDivergence) / 6.0; 
 }

@@ -12,11 +12,12 @@ RWTexture3D<float4> Result;
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-	float4 centerVel = _Velocity.Sample(vel_Linear_Clamp_Sampler, id.xyz);
+	// float4 centerVel = _Velocity.Sample(vel_Linear_Clamp_Sampler, id.xyz);
+	float4 centerVel = _Velocity[id.xyz];
 	
 	float3 pos = id;
 
 	pos -= _timeStep * centerVel.xyz;
 
-	Result[id.xyz] = _Velocity.Sample(vel_Linear_Clamp_Sampler, pos.xyz);
+	Result[id.xyz] = _Velocity[pos.xyz];
 }

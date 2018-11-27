@@ -65,9 +65,9 @@ Shader "Custom/fire" {
 			SamplerState samPointClamp
 			{
 				Filter = MIN_MAG_MIP_POINT;
-				AddressU = Wrap;
-				AddressV = Wrap;
-				AddressW = Wrap;
+				AddressU = Clamp;
+				AddressV = Clamp;
+				AddressW = Clamp;
 			};
 
 			float4 sampleColor(float3 pos) {
