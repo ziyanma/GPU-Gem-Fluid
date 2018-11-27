@@ -15,6 +15,8 @@ public class SmokeSimulation : AnimationController {
 	public ComputeShader computeAdvection;
 	public ComputeShader computeJacobi;
     public ComputeShader computeBuoyancy;
+	public ComputeShader computeImpulse;
+	public ComputeShader computeProjection;
 	
 	public int width = 64;
 	public int height = 64;
@@ -71,6 +73,12 @@ public class SmokeSimulation : AnimationController {
         ApplyVelocity(dt);
 		
 		ApplyBuoyancy(dt);
+		ApplyImpulse(dt, mTemperature);
+		ApplyImpulse(dt, mDensity);
+
+		ComputeDivergence();
+
+		Project();
     }
 
 
@@ -160,6 +168,19 @@ public class SmokeSimulation : AnimationController {
 		SwapBuffer(mVelocity);
     }
 
+	void ApplyImpulse(float dt, RenderTexture [] texture)
+	{
+		int kernel = computeImpulse.FindKernel("CSMain");
+		computeImpulse.SetFloat("_DeltaTime", dt);
+		computeImpulse.SetTexture(kernel, "_READ", texture[READ]);
+		computeImpulse.SetTexture(kernel, "_WRITE", texture[WRITE]);
+
+		computeImpulse.Dispatch(kernel, texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+        SwapBuffer(texture);
+	}
+
 	void ComputeDivergence()
 	{
 		computeJacobi.SetTexture(computeJacobi.FindKernel("CSMain"), 
@@ -171,9 +192,17 @@ public class SmokeSimulation : AnimationController {
                                 texRes.z / NUMTHREADS);
 	}
 
-	void ComputePressure() 
+	void Project()
 	{
-		
+		int kernel = computeProjection.FindKernel("CSMain");
+		computeProjection.SetTexture(kernel, "_Obstacle", mObstacle);
+		computeProjection.SetTexture(kernel, "_Pressure", mPressure);
+		computeProjection.SetTexture(kernel, "_Velocity", mVelocity[READ]);
+		computeProjection.SetTexture(kernel, "_WRITE", mVelocity[WRITE]);
+		computeJacobi.Dispatch(kernel, texRes.x / NUMTHREADS, 
+										texRes.y / NUMTHREADS, 
+										texRes.z / NUMTHREADS);
+		SwapBuffer(mVelocity);
 	}
 
 	void SwapBuffer (RenderTexture [] swap) {

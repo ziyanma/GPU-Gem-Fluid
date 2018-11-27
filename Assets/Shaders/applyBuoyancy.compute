@@ -9,7 +9,7 @@ RWTexture3D<float3> _WriteVelocity;
 Texture3D<float3> _ReadVelocity;
 Texture3D<float> _Density, _Temperature;
 
-[numthreads(NUM_THREADS,NUM_THREADS,NUM_THREADS)]
+[numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {   
     float T = _Temperature[id];

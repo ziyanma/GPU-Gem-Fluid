@@ -6,7 +6,7 @@ Texture3D<float> _Obstacle;
 #include "interpolation.cginc"
 Texture3D _Pressure;
 Texture3D _Velocity;
-RWTexture3D<float4> Result;
+RWTexture3D<float4> _WRITE;
 
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -25,5 +25,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	// subtracting the gradient of pressure.
 	float3 vOld = SampleBilinearRGBA(id.xyz, _Velocity).xyz;
 	float3 vNew = vOld - gradP;
-	Result[id.xyz] =  float4(vNew, 0);
+	_WRITE[id.xyz] =  float4(vNew, 0);
 }
