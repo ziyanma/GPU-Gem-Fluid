@@ -4,8 +4,6 @@
 #include "numthread.cginc"
 
 Texture3D<float4> _Velocity;
-SamplerState vel_linear_clamp_sampler;
-
 RWTexture3D<float> _WRITE;
 
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]

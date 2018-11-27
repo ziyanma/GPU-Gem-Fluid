@@ -26,24 +26,24 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	// subtracting the gradient of pressure.
 	// float3 vOld =  SampleBilinearRGBA(id, _Velocity).xyz;
 	float4 vMask = float4(1,1,1,1);
-	if (_Obstacle[uint3(id.x-1, id.y, id.z)] > 0.1) {
-		pL = pC; vMask.x = 0;	
-	}
-	if (_Obstacle[uint3(id.x+1, id.y, id.z)] > 0.1) {
-		pR = pC; vMask.x = 0;	
-	}
-	if (_Obstacle[uint3(id.x, id.y-1, id.z)] > 0.1) {
-		pB = pC; vMask.y = 0;	
-	}
-	if (_Obstacle[uint3(id.x, id.y+1, id.z)] > 0.1) {
-		pT = pC; vMask.y = 0;	
-	}
-	if (_Obstacle[uint3(id.x, id.y, id.z-1)] > 0.1) {
-		pD = pC; vMask.z = 0;	
-	}
-	if (_Obstacle[uint3(id.x, id.y, id.z+1)] > 0.1) {
-		pU = pC; vMask.z = 0;	
-	}
+	// if (_Obstacle[uint3(id.x-1, id.y, id.z)] > 0.1) {
+	// 	pL = pC; vMask.x = 0;	
+	// }
+	// if (_Obstacle[uint3(id.x+1, id.y, id.z)] > 0.1) {
+	// 	pR = pC; vMask.x = 0;	
+	// }
+	// if (_Obstacle[uint3(id.x, id.y-1, id.z)] > 0.1) {
+	// 	pB = pC; vMask.y = 0;	
+	// }
+	// if (_Obstacle[uint3(id.x, id.y+1, id.z)] > 0.1) {
+	// 	pT = pC; vMask.y = 0;	
+	// }
+	// if (_Obstacle[uint3(id.x, id.y, id.z-1)] > 0.1) {
+	// 	pD = pC; vMask.z = 0;	
+	// }
+	// if (_Obstacle[uint3(id.x, id.y, id.z+1)] > 0.1) {
+	// 	pU = pC; vMask.z = 0;	
+	// }
 	float3 gradP = 0.5 * float3(pR - pL, pT - pB, pU - pD);
 
 	float3 vOld = _Velocity[id].xyz;

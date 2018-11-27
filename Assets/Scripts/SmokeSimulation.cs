@@ -63,9 +63,11 @@ public class SmokeSimulation : AnimationController {
         mat.SetVector("_Scale", transform.localScale);
         mat.SetVector("_Translate", transform.position);
         mat.SetTexture("_Obstacle", mObstacle);
-		// mat.SetTexture("_Density", mVelocity[READ]);
-		mat.SetTexture("_Density", mPressure[READ]);
+		mat.SetTexture("_Density", mVelocity[READ]);
+		// mat.SetTexture("_Density", mPressure[READ]);
 		// mat.SetTexture("_Density", mDivergence);
+		
+		// mat.SetTexture("_Density", mDensity[READ]);
 		
 		mat.SetVector("_SmokeColor", new Vector4(0.5f, 0.5f, 0.5f, 0.5f));
     }
@@ -82,7 +84,7 @@ public class SmokeSimulation : AnimationController {
 
 		ComputeDivergence();
 		ComputePressure();
-		// Project();
+		Project();
     }
 
 
@@ -201,14 +203,16 @@ public class SmokeSimulation : AnimationController {
 	void ComputePressure() 
 	{
 		int kernel = computeJacobi.FindKernel("CSMain");
-		computeJacobi.SetTexture(kernel, "_Pressure", mPressure[READ]);
 		computeJacobi.SetTexture(kernel, "_Divergence", mDivergence);
 		computeJacobi.SetTexture(kernel, "_Obstacle", mObstacle);
-        computeJacobi.SetTexture(kernel, "_WRITE", mPressure[WRITE]);
-        computeJacobi.Dispatch(kernel, texRes.x / NUMTHREADS, 
-                                		texRes.y / NUMTHREADS, 
-                                		texRes.z / NUMTHREADS);
-		SwapBuffer(mPressure);
+		for (int i = 0; i < 10; i++) {
+			computeJacobi.SetTexture(kernel, "_Pressure", mPressure[READ]);
+			computeJacobi.SetTexture(kernel, "_WRITE", mPressure[WRITE]);
+			computeJacobi.Dispatch(kernel, texRes.x / NUMTHREADS, 
+											texRes.y / NUMTHREADS, 
+											texRes.z / NUMTHREADS);
+			SwapBuffer(mPressure);
+		}
 	}
 
 	void Project()

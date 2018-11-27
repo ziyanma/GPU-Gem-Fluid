@@ -34,14 +34,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     float centerP = _Pressure[id];
 
-    if(_Obstacle[L] > 0.1) pL = centerP;
-    if(_Obstacle[R] > 0.1) pR = centerP;
+    // if(_Obstacle[L] > 0.1) pL = centerP;
+    // if(_Obstacle[R] > 0.1) pR = centerP;
 
-    if(_Obstacle[B] > 0.1) pB = centerP;
-    if(_Obstacle[T] > 0.1) pT = centerP;
+    // if(_Obstacle[B] > 0.1) pB = centerP;
+    // if(_Obstacle[T] > 0.1) pT = centerP;
 
-    if(_Obstacle[D] > 0.1) pD = centerP;
-    if(_Obstacle[U] > 0.1) pU = centerP;
+    // if(_Obstacle[D] > 0.1) pD = centerP;
+    // if(_Obstacle[U] > 0.1) pU = centerP;
 
 	_WRITE[id] = (pL + pR + pB + pT + pU + pD - selfDivergence) / 6.0; 
 }

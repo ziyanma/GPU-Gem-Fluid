@@ -25,12 +25,12 @@ void AdvectVelocity (uint3 id : SV_DispatchThreadID)
 	}
 
 	float3 pos = id;
-	pos -= _timeStep * float3(centerVel.xyz);
+	pos -= float3(centerVel.xyz) * _timeStep;
 	
 	// _WriteVelocity[id] = _ReadVelocity[int3(round(pos.x), round(pos.y), round(pos.z))];
-	_WriteVelocity[id] = _ReadVelocity[int3(pos)];
+	// _WriteVelocity[id] = _ReadVelocity[int3(pos)];
 	
-	// _WriteVelocity[id] = SampleBilinearRGBA(pos, _ReadVelocity);
+	_WriteVelocity[id] = SampleBilinearRGBA(pos, _ReadVelocity);
 
 }
 
@@ -48,8 +48,8 @@ void Advect (uint3 id : SV_DispatchThreadID)
 	float3 pos = id;
 	pos -=  centerVel.xyz * _timeStep;
 
-	_Write[id] = _Read[int3(pos)];
+	// _Write[id] = _Read[int3(pos)];
 	// _Write[id] = _Read[int3(round(pos.x), round(pos.y), round(pos.z))];
 	
-	// _Write[id] = SampleBilinearFloat(pos, _Read);	
+	_Write[id] = SampleBilinearFloat(pos, _Read);	
 }
