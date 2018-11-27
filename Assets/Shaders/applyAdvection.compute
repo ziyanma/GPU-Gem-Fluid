@@ -1,7 +1,4 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel AdvectVelocity
-#pragma kernel Advect
-
 #include "numthread.cginc"
 
 Texture3D<float> _Obstacle;
@@ -16,6 +13,7 @@ RWTexture3D<float4> _WriteVelocity;
 Texture3D<float> _Read;
 RWTexture3D<float> _Write;
 
+#pragma kernel AdvectVelocity
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void AdvectVelocity (uint3 id : SV_DispatchThreadID)
 {
@@ -28,10 +26,13 @@ void AdvectVelocity (uint3 id : SV_DispatchThreadID)
 
 	float3 pos = id;
 	pos -= _timeStep * float3(centerVel.xyz);
+	
+	_WriteVelocity[id] = _Read[int3(pos)];
+	// _WriteVelocity[id] = SampleBilinearRGBA(pos, _ReadVelocity);
 
-	_WriteVelocity[id] = SampleBilinearRGBA(pos, _ReadVelocity);
 }
 
+#pragma kernel Advect
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void Advect (uint3 id : SV_DispatchThreadID)
 {
@@ -43,7 +44,8 @@ void Advect (uint3 id : SV_DispatchThreadID)
 	}
 
 	float3 pos = id;
-	pos -= _timeStep * float3(centerVel.xyz);
+	pos -=  centerVel.xyz * _timeStep;
 
-	_Write[id] = SampleBilinearFloat(pos, _Read);
+	_Write[id] = _Read[int3(pos)];
+	// _Write[id] = SampleBilinearFloat(pos, _Read);	
 }

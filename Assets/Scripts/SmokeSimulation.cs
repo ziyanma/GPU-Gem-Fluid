@@ -63,23 +63,25 @@ public class SmokeSimulation : AnimationController {
         mat.SetVector("_Scale", transform.localScale);
         mat.SetVector("_Translate", transform.position);
         mat.SetTexture("_Obstacle", mObstacle);
+		// mat.SetTexture("_Density", mVelocity[READ]);
 		mat.SetTexture("_Density", mDensity[READ]);
+		
 		mat.SetVector("_SmokeColor", new Vector4(0.5f, 0.5f, 0.5f, 0.5f));
     }
 
     public override void NextFrame(float dt)
     {
-		// ApplyAdvection(dt, mTemperature);
-		// ApplyAdvection(dt, mDensity);
-        // ApplyVelocity(dt);
+		ApplyAdvection(dt, mTemperature);
+		ApplyAdvection(dt, mDensity);
+        ApplyVelocity(dt);
 		
-		// ApplyBuoyancy(dt);
+		ApplyBuoyancy(dt);
 		ApplyImpulse(dt, mTemperature, mTemperatureAmount);
 		ApplyImpulse(dt, mDensity, mDensityAmount);
 
-		// ComputeDivergence();
-		// ComputePressure();
-		// Project();
+		ComputeDivergence();
+		ComputePressure();
+		Project();
     }
 
 
@@ -157,7 +159,7 @@ public class SmokeSimulation : AnimationController {
 		int kernel = computeBuoyancy.FindKernel("CSMain");
 		computeBuoyancy.SetFloat("_DeltaTime", dt);
 		computeBuoyancy.SetFloat("_Mass", 0.0125f);
-		computeBuoyancy.SetFloat("_AmbientTemperature", 1.0f);
+		computeBuoyancy.SetFloat("_AmbientTemperature", 0.0f);
 		computeBuoyancy.SetVector("_Up", Vector3.up);
         computeBuoyancy.SetTexture(kernel,	"_ReadVelocity", mVelocity[READ]);
 		computeBuoyancy.SetTexture(kernel,	"_Density", mDensity[READ]);

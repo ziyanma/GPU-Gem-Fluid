@@ -25,5 +25,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	// subtracting the gradient of pressure.
 	float3 vOld = SampleBilinearRGBA(id, _Velocity).xyz;
 	float3 vNew = vOld - gradP;
-	_WRITE[id.xyz] =  float4(vNew, 0);
+	_WRITE[id] =  float4(vNew, 0);
 }
