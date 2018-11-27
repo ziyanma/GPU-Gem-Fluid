@@ -44,7 +44,7 @@ public class SmokeSimulation : AnimationController {
         initialize3DTexture(mDensity, RenderTextureFormat.RFloat);
 		initialize3DTexture(mTemperature, RenderTextureFormat.RFloat);
 		initialize3DTexture(mPressure, RenderTextureFormat.RFloat);
-		initialize3DTexture(mVelocity, RenderTextureFormat.ARGB32);
+		initialize3DTexture(mVelocity, RenderTextureFormat.ARGBHalf);
 
 		//no readwrite 
 		mDivergence = initializeRenderTexture(RenderTextureFormat.RFloat);
@@ -63,16 +63,11 @@ public class SmokeSimulation : AnimationController {
         mat.SetVector("_Scale", transform.localScale);
         mat.SetVector("_Translate", transform.position);
         mat.SetTexture("_Obstacle", mObstacle);
-<<<<<<< HEAD
-		mat.SetTexture("_Density", mVelocity[READ]);
-		// mat.SetTexture("_Density", mPressure[READ]);
-=======
 		// mat.SetTexture("_Density", mVelocity[READ]);
-		mat.SetTexture("_Density", mDensity[READ]);
->>>>>>> 8fcaadfd64ef490f77ab958e7b0525be4c0733ad
+		// mat.SetTexture("_Density", mPressure[READ]);
 		// mat.SetTexture("_Density", mDivergence);
 		
-		// mat.SetTexture("_Density", mDensity[READ]);
+		mat.SetTexture("_Density", mDensity[READ]);
 		
 		mat.SetVector("_SmokeColor", new Vector4(0.5f, 0.5f, 0.5f, 0.5f));
     }

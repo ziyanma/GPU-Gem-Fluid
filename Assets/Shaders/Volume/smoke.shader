@@ -27,8 +27,8 @@ Shader "Custom/Smoke" {
 			float _StepSize;
 
 			Texture3D _Obstacle;
-            Texture3D<float3> _Density;
-            // Texture3D<float> _Density;
+            // Texture3D<float3> _Density;
+            Texture3D<float> _Density;
             
             float4 _SmokeColor;
 
@@ -73,11 +73,11 @@ Shader "Custom/Smoke" {
 
 				float3 translate = (pos - _Translate) / _Scale + float3(0.5, 0.5, 0.5);
 				// int3 sampler = translate * int3(x,y,z);
-                // float samp = _Density.Sample(vel_Linear_Clamp_Sampler, translate);
-                // if (samp > 1.0f) samp = 1.0f;
-                // return samp * _SmokeColor;
-                float3 samp = _Density.Sample(vel_Linear_Clamp_Sampler, translate);
-                return float4(samp.x, samp.y, samp.z, 0.1f);
+                float samp =  _Density.Sample(vel_Linear_Clamp_Sampler, translate);
+                if (samp > 1.0f) samp = 1.0f;
+                return samp * _SmokeColor;
+                // float3 samp = - _Density.Sample(vel_Linear_Clamp_Sampler, translate);
+                // return float4(samp.x, samp.y, samp.z, 0.1f);
 			}
 
             float sampleAlpha(float3 pos) {
