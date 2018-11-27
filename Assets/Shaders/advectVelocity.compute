@@ -12,28 +12,11 @@ RWTexture3D<float4> Result;
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-	//finding velocity of cell center
-	int idxL = max(0, id.x-1) + id.y*_Size.x + id.z*_Size.x*_Size.y;
-    int idxR = min(_Size.x-1, id.x+1) + id.y*_Size.x + id.z*_Size.x*_Size.y;
-    
-    int idxB = id.x + max(0, id.y-1)*_Size.x + id.z*_Size.x*_Size.y;
-    int idxT = id.x + min(_Size.y-1, id.y+1)*_Size.x + id.z*_Size.x*_Size.y;
-    
-    int idxD = id.x + id.y*_Size.x + max(0, id.z-1)*_Size.x*_Size.y;
-    int idxU = id.x + id.y*_Size.x + min(_Size.z-1, id.z+1)*_Size.x*_Size.y;
-
-	float3 L = _Velocity[ idxL ];
-    float3 R = _Velocity[ idxR ];
-    
-    float3 B = _Velocity[ idxB ];
-    float3 T = _Velocity[ idxT ];
-    
-    float3 D = _Velocity[ idxD ];
-    float3 U = _Velocity[ idxU ];
-    
-    float3 centerVel = 0.5 * float3( (( T.z - B.z ) - ( U.y - D.y )) , (( U.x - D.x ) - ( R.z - L.z )) , (( R.y - L.y ) - ( T.x - B.x )) );
+	float4 centerVel = _Velocity.Sample(vel_Linear_Clamp_Sampler, id.xyz);
 	
-	float3 pos -= _timeStep * centerVel;
+	float3 pos = id;
+
+	pos -= _timeStep * centerVel.xyz;
 
 	Result[id.xyz] = _Velocity.Sample(vel_Linear_Clamp_Sampler, pos.xyz);
 }

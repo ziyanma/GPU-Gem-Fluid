@@ -12,6 +12,8 @@ public class SmokeSimulation : AnimationController {
 	//material & shader
 	public Material mat;
 	public ComputeShader computeObstacle;
+	public ComputeShader advectVelocity;
+	public ComputeShader computeDivergence;
 	
 	public int width = 64;
 	public int height = 64;
@@ -100,8 +102,27 @@ public class SmokeSimulation : AnimationController {
 
     void ApplyVelocity(float dt)
     {
-
+		advectVelocity.SetFloat("_timeStep", dt);
+		advectVelocity.SetTexture(computeObstacle.FindKernel("CSMain"),
+								"_Velocity", 
+								mVelocity[READ]);
+		advectVelocity.Dispatch(computeObstacle.FindKernel("CSMain"), 
+                                texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+		SwapBuffer(mVelocity);
     }
+
+	void ComputeDivergence()
+	{
+		computeDivergence.SetTexture(computeDivergence.FindKernel("CSMain"), 
+									"_Velocity",
+									mVelocity[READ]);
+		computeDivergence.Dispatch(computeObstacle.FindKernel("CSMain"), 
+                                texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+	}
 
 	void SwapBuffer (RenderTexture [] swap) {
 		RenderTexture temp = swap[0];

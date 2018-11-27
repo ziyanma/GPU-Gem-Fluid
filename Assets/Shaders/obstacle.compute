@@ -3,7 +3,6 @@
 
 #include "numthread.cginc"
 
-float4 _GridSize;
 RWTexture3D<float> Result;
 
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
