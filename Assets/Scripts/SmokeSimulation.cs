@@ -12,8 +12,9 @@ public class SmokeSimulation : AnimationController {
 	//material & shader
 	public Material mat;
 	public ComputeShader computeObstacle;
-	public ComputeShader advectVelocity;
-	public ComputeShader computeDivergence;
+	public ComputeShader computeAdvection;
+	public ComputeShader computeJacobi;
+    public ComputeShader computeBuoyancy;
 	
 	public int width = 64;
 	public int height = 64;
@@ -67,8 +68,10 @@ public class SmokeSimulation : AnimationController {
 
     public override void NextFrame(float dt)
     {
+		ApplyAdvection(dt, mTemperature);
+		ApplyAdvection(dt, mDensity);
         ApplyVelocity(dt);
-
+		
     }
 
 
@@ -113,23 +116,53 @@ public class SmokeSimulation : AnimationController {
 
     void ApplyVelocity(float dt)
     {
-		advectVelocity.SetFloat("_timeStep", dt);
-		advectVelocity.SetTexture(computeObstacle.FindKernel("CSMain"),
-								"_Velocity", 
-								mVelocity[READ]);
-		advectVelocity.Dispatch(computeObstacle.FindKernel("CSMain"), 
+		int kernel = computeAdvection.FindKernel("AdvectVelocity");
+		computeAdvection.SetFloat("_timeStep", dt);
+        computeAdvection.SetTexture(kernel, "_ReadVelocity", mVelocity[READ]);
+		computeAdvection.SetTexture(kernel, "_WriteVelocity", mVelocity[WRITE]);
+		computeAdvection.SetTexture(kernel, "_Obstacle", mObstacle);
+        computeAdvection.Dispatch(kernel, 
                                 texRes.x / NUMTHREADS, 
                                 texRes.y / NUMTHREADS, 
                                 texRes.z / NUMTHREADS);
+
 		SwapBuffer(mVelocity);
+    }
+
+    void ApplyAdvection(float dt, RenderTexture [] texture)
+    {
+		int kernel = computeAdvection.FindKernel("Advect");
+		computeAdvection.SetFloat("_timeStep", dt);
+        computeAdvection.SetTexture(kernel,	"_ReadVelocity", mVelocity[READ]);
+		computeAdvection.SetTexture(kernel,	"_Obstacle", mObstacle);
+		computeAdvection.SetTexture(kernel,	"_Read", texture[READ]);
+		computeAdvection.SetTexture(kernel,	"_Write", texture[WRITE]);
+        computeAdvection.Dispatch(kernel, texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+		SwapBuffer(texture);
+    }
+
+	void ApplyBuoyancy(float dt, RenderTexture [] texture)
+    {
+		int kernel = computeAdvection.FindKernel("Advect");
+		computeAdvection.SetFloat("_timeStep", dt);
+        computeAdvection.SetTexture(kernel,	"_ReadVelocity", mVelocity[READ]);
+		computeAdvection.SetTexture(kernel,	"_Obstacle", mObstacle);
+		computeAdvection.SetTexture(kernel,	"_Read", texture[READ]);
+		computeAdvection.SetTexture(kernel,	"_Write", texture[WRITE]);
+        computeAdvection.Dispatch(kernel, texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+		SwapBuffer(texture);
     }
 
 	void ComputeDivergence()
 	{
-		computeDivergence.SetTexture(computeDivergence.FindKernel("CSMain"), 
+		computeJacobi.SetTexture(computeJacobi.FindKernel("CSMain"), 
 									"_Velocity",
 									mVelocity[READ]);
-		computeDivergence.Dispatch(computeObstacle.FindKernel("CSMain"), 
+        computeJacobi.Dispatch(computeObstacle.FindKernel("CSMain"), 
                                 texRes.x / NUMTHREADS, 
                                 texRes.y / NUMTHREADS, 
                                 texRes.z / NUMTHREADS);
