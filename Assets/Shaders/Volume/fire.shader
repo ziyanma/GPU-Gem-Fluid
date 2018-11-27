@@ -7,7 +7,9 @@ Shader "Custom/fire" {
 		_Translate ("Translate", Vector) = (1,1,1)
 		// 0 Step size would absolutely crash Unity
 		_StepSize ("StepSize", Range(0.05, 1)) = 0.1
+		_Obstacle ("Obstacle", 3D) = "defaulttexture" {}
 	}
+
 	SubShader {
 		Tags { "Queue"="Transparent" }
 		LOD 200
@@ -24,6 +26,8 @@ Shader "Custom/fire" {
 			float3 _Scale;
 			float3 _Translate;
 			float _StepSize;
+
+			Texture3D _Obstacle;
 
 			struct v2f 
 			{
@@ -57,12 +61,33 @@ Shader "Custom/fire" {
 			    return t0 <= t1;
 			}
 
-			float4 sampleColor(float3 pos) {
-				if (length(pos - _Translate) < 0.5f) {
-					return float4(1.0, 0.0, 0.0, 0.1f);
-				} 
 
-				return float4(0.0, 0.0, 0.0, 0.0f);
+			SamplerState samPointClamp
+			{
+				Filter = MIN_MAG_MIP_POINT;
+				AddressU = Wrap;
+				AddressV = Wrap;
+				AddressW = Wrap;
+			};
+
+			float4 sampleColor(float3 pos) {
+				// uint x,y,z;
+				// _Obstacle.GetDimiensions(x,y,z);
+
+				float3 translate = (pos - _Translate) / _Scale + float3(0.5, 0.5, 0.5);
+				// int3 sampler = translate * int3(x,y,z);
+				float sample = _Obstacle.Sample(samPointClamp, translate);
+				// float sample = tex3D(_Obstacle, translate);
+				if (sample > 0) {
+					return float4(1.0, 0.0, 0.0, 1.0f);
+				} 
+				return float4 (0.0f, 0.0f, 0.0f, 0.0f);
+
+				// if (length(pos - _Translate) < 0.5f) {
+				// 	return float4(1.0, 0.0, 0.0, 0.1f);
+				// } 
+
+				// return float4(0.0, 0.0, 0.0, 0.0f);
 			}
 
 
@@ -100,7 +125,8 @@ Shader "Custom/fire" {
 				float dist = length(rayEnd - rayStart);
 				float3 ds = normalize(rayEnd - rayStart) * stepSize;
 				int numStep = dist / stepSize;
-				
+				if (numStep > 64) numStep = 64;
+
 				float3 rayPos = rayStart;
 				
 				float4 FinalColor = float4(0.0, 0.0, 0.0, 0.0);

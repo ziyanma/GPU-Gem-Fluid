@@ -10,15 +10,17 @@ RWTexture3D<float> Result;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     float obstacle = 0;
+	uint x, y, z;
+	Result.GetDimensions(x, y, z);
     
-    if(id.x-1 < 0) obstacle = 1;
-    if(id.x+1 > (int)_GridSize.x-1) obstacle = 1;
+    // if(id.x <= 0) obstacle = 1;
+    // if(id.x >= x /2) obstacle = 1;
     
-    if(id.y-1 < 0) obstacle = 1;
-    if(id.y+1 > (int)_GridSize.y-1) obstacle = 1;
+    if(id.y <= 0) obstacle = 1;
+    if(id.y >= y / 2) obstacle = 1;
     
-    if(id.z-1 < 0) obstacle = 1;
-    if(id.z+1 > (int)_GridSize.z-1) obstacle = 1;
+    // if(id.z <= 0) obstacle = 1;
+    // if(id.z >= (int)_GridSize.z-1) obstacle = 1;
     
     Result[id.xyz] = obstacle;
 }
