@@ -17,10 +17,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float3 V = _ReadVelocity[id];
     float P = _Pressure[id];
     // 1 / T0 - 1 / T in GPU Gem
-    // if(T > _AmbientTemperature)
-    //     V += (_DeltaTime * (T - _AmbientTemperature) - D * _Mass) * _Up;
-    V += (_DeltaTime * (_AmbientTemperature - T ) * D * _Mass * P) * _Up;
-    
+    if(T > _AmbientTemperature)
+        V += (_DeltaTime * (T - _AmbientTemperature) - D * _Mass) * _Up;
+    // V += (_DeltaTime * (_AmbientTemperature - T ) * D * _Mass * P) * _Up;
+    // V += 
+    if (length(V) > 1) normalize(V);
     _WriteVelocity[id] = V;
 }
 

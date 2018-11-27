@@ -5,12 +5,14 @@
 Texture3D<float> _Obstacle;
 #include "interpolation.cginc"
 Texture3D<float> _Pressure;
-Texture3D _Velocity;
+Texture3D<float4> _Velocity;
 RWTexture3D<float4> _WRITE;
 
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+	float pC = _Pressure[id];
+
 	float pL = _Pressure[uint3(id.x-1, id.y, id.z)];
     float pR = _Pressure[uint3(id.x+1, id.y, id.z)];
     
@@ -20,10 +22,31 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float pD = _Pressure[uint3(id.x, id.y, id.z -1)];
     float pU = _Pressure[uint3(id.x, id.y, id.z +1)];
 
-	float3 gradP = 0.5*float3(pR - pL, pT - pB, pU - pD);
 	// Project the velocity onto its divergence-free component by
 	// subtracting the gradient of pressure.
-	float3 vOld = SampleBilinearRGBA(id, _Velocity).xyz;
+	// float3 vOld = SampleBilinearRGBA(id, _Velocity).xyz;
+	float4 vMask = float4(1,1,1,1);
+	if (_Obstacle[uint3(id.x-1, id.y, id.z)] > 0.1) {
+		pL = pC; vMask.x = 0;	
+	}
+	if (_Obstacle[uint3(id.x+1, id.y, id.z)] > 0.1) {
+		pR = pC; vMask.x = 0;	
+	}
+	if (_Obstacle[uint3(id.x, id.y-1, id.z)] > 0.1) {
+		pB = pC; vMask.y = 0;	
+	}
+	if (_Obstacle[uint3(id.x, id.y+1, id.z)] > 0.1) {
+		pT = pC; vMask.y = 0;	
+	}
+	if (_Obstacle[uint3(id.x, id.y, id.z-1)] > 0.1) {
+		pD = pC; vMask.z = 0;	
+	}
+	if (_Obstacle[uint3(id.x, id.y, id.z+1)] > 0.1) {
+		pU = pC; vMask.z = 0;	
+	}
+	float3 gradP = 0.5*float3(pR - pL, pT - pB, pU - pD);
+
+	float3 vOld = _Velocity[id].xyz;
 	float3 vNew = vOld - gradP;
-	_WRITE[id] =  float4(vNew, 0);
+	_WRITE[id] =  float4(vNew, 0) * vMask;
 }
