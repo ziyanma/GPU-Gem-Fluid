@@ -193,7 +193,7 @@ Transform:
   m_GameObject: {fileID: 958692657}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 3, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -217,6 +217,7 @@ MonoBehaviour:
   computeBuoyancy: {fileID: 7200000, guid: 787e22e8ebdaa9e47abac84409138162, type: 3}
   computeDivergence: {fileID: 7200000, guid: 6ee82ebc911b947eebd0eff3dc85a851, type: 3}
   computeProjection: {fileID: 7200000, guid: 9d6c8683d3ed3475ebfca71a4d2cca95, type: 3}
+  computeImpulse: {fileID: 7200000, guid: dadce24fe529e45d1bd33ca873dfebe4, type: 3}
   width: 64
   height: 64
   depth: 64
@@ -359,10 +360,10 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1745579919}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
+  m_LocalPosition: {x: 0, y: 3, z: -5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 30, y: 0, z: 0}

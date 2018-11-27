@@ -9,26 +9,25 @@
 		_ReflectionColor ("Reflection color", COLOR)  = ( .54, .95, .99, 0.5)
 		_SpecularColor ("Specular color", COLOR)  = ( .72, .72, .72, 1)
 		_WorldLightDir ("Specular light direction", Vector) = (0.0, 0.1, -0.5, 0.0)
+		_Shininess ("Shininess", Range (2.0, 500.0)) = 200.0
 
 		_Scale ("Scale", Vector) = (1,1,1)
-		_Translate ("Translate", Vector) = (0,0,0)
+		_Translate ("Translate", Vector) = (1,1,1)
 		_StepSize ("StepSize", Range(0.05, 1)) = 0.1
 		_Obstacle ("Obstacle", 3D) = "defaulttexture" {}
         _Density ("Density", 3D) = "defaulttexture" {}
 	}
 	SubShader
 	{
-		Tags {"RenderType"="Transparent" "Queue"="Transparent"}
+		Tags {"Queue"="Transparent"}
 		LOD 200
 
 		GrabPass { "_RefractionTex" }
 
 		Pass
 		{
+			Cull front
 			Blend SrcAlpha OneMinusSrcAlpha
-			ZTest LEqual
-			ZWrite Off
-			Cull Off
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
@@ -113,7 +112,7 @@
 				float3 translate = (pos - _Translate) / _Scale + float3(0.5, 0.5, 0.5);
 				// int3 sampler = translate * int3(x,y,z);
                 float samp = _Density.Sample(vel_Linear_Clamp_Sampler, translate);
-                return samp * _WaterColor;
+                return samp * _BaseColor;
 			}
 			
 			float Fresnel(float3 viewVector, float3 worldNormal, float bias, float power)
@@ -174,6 +173,7 @@
 					FinalColor.xyz += sample.xyz * sample.a * (1 - FinalColor.a);
 					FinalColor.a += sample.a * (1 - FinalColor.a);
 				}
+				// return FinalColor;
 
                 float4 baseColor = FinalColor;
 
@@ -185,8 +185,10 @@
 				float spec = max(0.0,pow (nh, _Shininess));
 
 				// base, depth & reflection colors
-				float4 reflectionColor = lerp (rtReflections,_ReflectionColor,_ReflectionColor.a);
+				// float4 reflectionColor = lerp (rtReflections,_ReflectionColor,_ReflectionColor.a);
+				float4 reflectionColor = _ReflectionColor;
 				baseColor = lerp (lerp (rtRefractions, baseColor, baseColor.a), reflectionColor, refl2Refr);
+				// baseColor = lerp (rtRefractions, baseColor, baseColor.a);
 				baseColor = baseColor + spec * _SpecularColor;
 				
 				UNITY_APPLY_FOG(i.fogCoord, baseColor);

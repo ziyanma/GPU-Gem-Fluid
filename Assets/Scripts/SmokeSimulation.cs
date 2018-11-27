@@ -64,7 +64,7 @@ public class SmokeSimulation : AnimationController {
         mat.SetVector("_Translate", transform.position);
         mat.SetTexture("_Obstacle", mObstacle);
 		// mat.SetTexture("_Density", mVelocity[READ]);
-		mat.SetTexture("_Density", mPressure[READ]);
+		mat.SetTexture("_Density", mDensity[READ]);
 		// mat.SetTexture("_Density", mDivergence);
 		
 		mat.SetVector("_SmokeColor", new Vector4(0.5f, 0.5f, 0.5f, 0.5f));
