@@ -13,10 +13,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	uint x, y, z;
 	_READ.GetDimensions(x, y, z);
 	//define source pose:
-	float3 sourcePos = float3(x/2, 0, z/2);
-	float dist = length(id.xyz - sourcePos);
-	float radius = 16;
+	float3 sourcePos = float3(x/2, 0, x/2);
+	float dist = length(id - sourcePos) * length(id - sourcePos);
+	float radius = 16 * 16;
 	float amount = exp(-dist/radius) * _DeltaTime;
 
-	_WRITE[id.xyz] = _READ[id.xyz] + amount;
+	_WRITE[id] = _READ[id] + amount;
 }

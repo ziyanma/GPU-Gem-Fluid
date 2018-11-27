@@ -10,7 +10,7 @@ RWTexture3D<float> _WRITE;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	// divergence at center cell.
-	float selfDivergence = _Pressure[id.xyz];
+	float selfDivergence = _Pressure[id];
 
 	// Get pressure values from neighboring cells.
 	float pL = _Pressure[uint3(id.x-1, id.y, id.z)];

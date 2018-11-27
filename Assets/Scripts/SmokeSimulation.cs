@@ -71,7 +71,7 @@ public class SmokeSimulation : AnimationController {
         ApplyVelocity(dt);
 		
 		ApplyBuoyancy(dt);
-		ApplyImpulse(dt, mTemperature);
+		// ApplyImpulse(dt, mTemperature);
 		ApplyImpulse(dt, mDensity);
 
 		ComputeDivergence();
@@ -155,7 +155,6 @@ public class SmokeSimulation : AnimationController {
 		computeBuoyancy.SetFloat("_DeltaTime", dt);
 		computeBuoyancy.SetFloat("_Mass", 0.0125f);
 		computeBuoyancy.SetFloat("_AmbientTemperature", 0.0f);
-		
 		computeBuoyancy.SetVector("_Up", Vector3.up);
         computeBuoyancy.SetTexture(kernel,	"_ReadVelocity", mVelocity[READ]);
 		computeBuoyancy.SetTexture(kernel,	"_Density", mDensity[READ]);

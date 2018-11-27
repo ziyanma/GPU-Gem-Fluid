@@ -19,31 +19,31 @@ RWTexture3D<float> _Write;
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void AdvectVelocity (uint3 id : SV_DispatchThreadID)
 {
-	float4 centerVel = _ReadVelocity[id.xyz];
+	float4 centerVel = _ReadVelocity[id];
 	
-	if (_Obstacle[id.xyz] > 0.1) {
-		_WriteVelocity[id.xyz] = float4(0, 0, 0, 0);
+	if (_Obstacle[id] > 0.1) {
+		_WriteVelocity[id] = float4(0, 0, 0, 0);
 		return;
 	}
 
 	float3 pos = id;
 	pos -= _timeStep * float3(centerVel.xyz);
 
-	_WriteVelocity[id.xyz] = SampleBilinearRGBA(pos, _ReadVelocity);
+	_WriteVelocity[id] = SampleBilinearRGBA(pos, _ReadVelocity);
 }
 
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void Advect (uint3 id : SV_DispatchThreadID)
 {
-	float4 centerVel = _ReadVelocity[id.xyz];
+	float4 centerVel = _ReadVelocity[id];
 	
-	if (_Obstacle[id.xyz] > 0.1) {
-		_WriteVelocity[id.xyz] = float4(0, 0, 0, 0);
+	if (_Obstacle[id] > 0.1) {
+		_WriteVelocity[id] = float4(0, 0, 0, 0);
 		return;
 	}
 
 	float3 pos = id;
 	pos -= _timeStep * float3(centerVel.xyz);
 
-	_Write[id.xyz] = SampleBilinearFloat(pos, _Read);
+	_Write[id] = SampleBilinearFloat(pos, _Read);
 }
