@@ -536,11 +536,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isPlaying: 0
   mat: {fileID: 2100000, guid: 1f5fa4330a9877147baa9dd50eeb56d8, type: 2}
-  mTexture: []
-  mObstacle: {fileID: 0}
-  texRes: {x: 64, y: 64, z: 64}
-  NUMTHREADS: 8
   computeObstacle: {fileID: 7200000, guid: 655351c57baa19b4f896cf2fa4260f17, type: 3}
+  computeAdvection: {fileID: 7200000, guid: 23267d23940f188429a265f1140a59d9, type: 3}
+  computeJacobi: {fileID: 7200000, guid: a453b81383cbe447c896e5366ffde989, type: 3}
+  computeBuoyancy: {fileID: 7200000, guid: 787e22e8ebdaa9e47abac84409138162, type: 3}
+  width: 64
+  height: 64
+  depth: 64
 --- !u!1 &1156994248
 GameObject:
   m_ObjectHideFlags: 0

@@ -44,12 +44,11 @@ public class SmokeSimulation : AnimationController {
 		//no readwrite 
 		mDivergence = initializeRenderTexture(RenderTextureFormat.RFloat);
 		mPressure = initializeRenderTexture(RenderTextureFormat.RFloat);
-
-        mObstacle = new RenderTexture(texRes[0], texRes[1], texRes[2], RenderTextureFormat.RFloat); // To Alpha 8
+        mObstacle = new RenderTexture(texRes[0], texRes[1], 0, RenderTextureFormat.RFloat); // To Alpha 8
         mObstacle.enableRandomWrite = true;
         mObstacle.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-        mObstacle.volumeDepth = texRes[2];
         mObstacle.isPowerOfTwo = true;
+        mObstacle.volumeDepth = texRes[2];
         mObstacle.Create();
 
         InitializeObstacle();
@@ -90,7 +89,7 @@ public class SmokeSimulation : AnimationController {
 	//helpers
 
 	RenderTexture initializeRenderTexture(RenderTextureFormat format) {
-		RenderTexture newTex  = new RenderTexture(texRes[0], texRes[1], texRes[2], format); // To Alpha 8
+		RenderTexture newTex  = new RenderTexture(texRes[0], texRes[1], 0, format); // To Alpha 8
         newTex.enableRandomWrite = true;
         newTex.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
         newTex.volumeDepth = texRes[2];
