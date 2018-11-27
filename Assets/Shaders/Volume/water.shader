@@ -176,7 +176,14 @@
 
 				float3 rayPos = rayStart;
 				
-                float4 baseColor = _BaseColor;
+                float4 FinalColor = float4(0.0, 0.0, 0.0, 0.0);
+				for (int i = 0; i < numStep; i++, rayPos += ds) {
+					float4 sample = sampleColor(rayPos);
+					FinalColor.xyz += sample.xyz * sample.a * (1 - FinalColor.a);
+					FinalColor.a += sample.a * (1 - FinalColor.a);
+				}
+
+                float4 baseColor = FinalColor;
 
 				float refl2Refr = Fresnel(direction, float3(0.0f,1.0f,0.0f), FRESNEL_BIAS, FRESNEL_POWER);
 		
