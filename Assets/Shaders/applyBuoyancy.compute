@@ -1,11 +1,12 @@
 #pragma kernel CSMain
-#define NUM_THREADS 8
 
-float4 _Size;
+#include "numthread.cginc"
+
 float3 _Up;
-float _AmbientTemperature, _DeltaTime, _Buoyancy, _Mass;
+float _AmbientTemperature, _DeltaTime, _Mass;
 
-RWTexture3D<float3> _Velocity;
+RWTexture3D<float3> _WriteVelocity;
+Texture3D<float3> _ReadVelocity;
 Texture3D<float> _Density, _Temperature;
 
 [numthreads(NUM_THREADS,NUM_THREADS,NUM_THREADS)]
@@ -13,12 +14,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 {   
     float T = _Temperature[id];
     float D = _Density[id];
-    float3 V = _Velocity[id];
+    float3 V = _ReadVelocity[id];
     
     // 1 / T0 - 1 / T in GPU Gem
-    V += (_DeltaTime * (T - _AmbientTemperature) * _Buoyancy - D * _Mass) * _Up.xyz;
+    if(T > _AmbientTemperature)
+        V += (_DeltaTime * (T - _AmbientTemperature) - D * _Mass) * _Up;
     
-    _Velocity[id.xyz] = V;
+    _WriteVelocity[id] = V;
 }
 
 

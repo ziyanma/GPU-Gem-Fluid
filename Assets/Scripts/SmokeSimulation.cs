@@ -31,7 +31,6 @@ public class SmokeSimulation : AnimationController {
 
 	Vector3Int texRes; // TODO: Make it flexible
 
-
 	// Use this for initialization
 	void Start () {
         texRes = new Vector3Int(width, height, depth);
@@ -71,6 +70,7 @@ public class SmokeSimulation : AnimationController {
 		ApplyAdvection(dt, mDensity);
         ApplyVelocity(dt);
 		
+		ApplyBuoyancy(dt);
     }
 
 
@@ -142,18 +142,22 @@ public class SmokeSimulation : AnimationController {
 		SwapBuffer(texture);
     }
 
-	void ApplyBuoyancy(float dt, RenderTexture [] texture)
+	void ApplyBuoyancy(float dt)
     {
-		int kernel = computeAdvection.FindKernel("Advect");
-		computeAdvection.SetFloat("_timeStep", dt);
-        computeAdvection.SetTexture(kernel,	"_ReadVelocity", mVelocity[READ]);
-		computeAdvection.SetTexture(kernel,	"_Obstacle", mObstacle);
-		computeAdvection.SetTexture(kernel,	"_Read", texture[READ]);
-		computeAdvection.SetTexture(kernel,	"_Write", texture[WRITE]);
-        computeAdvection.Dispatch(kernel, texRes.x / NUMTHREADS, 
+		int kernel = computeBuoyancy.FindKernel("CSMain");
+		computeBuoyancy.SetFloat("_DeltaTime", dt);
+		computeBuoyancy.SetFloat("_Mass", 0.0125f);
+		computeBuoyancy.SetFloat("_AmbientTemperature", 0.0f);
+		
+		computeBuoyancy.SetVector("_Up", Vector3.up);
+        computeBuoyancy.SetTexture(kernel,	"_ReadVelocity", mVelocity[READ]);
+		computeBuoyancy.SetTexture(kernel,	"_Density", mDensity[READ]);
+		computeBuoyancy.SetTexture(kernel,	"_Temperature", mTemperature[READ]);
+		computeBuoyancy.SetTexture(kernel,	"_WriteVelocity", mVelocity[WRITE]);
+        computeBuoyancy.Dispatch(kernel, texRes.x / NUMTHREADS, 
                                 texRes.y / NUMTHREADS, 
                                 texRes.z / NUMTHREADS);
-		SwapBuffer(texture);
+		SwapBuffer(mVelocity);
     }
 
 	void ComputeDivergence()
