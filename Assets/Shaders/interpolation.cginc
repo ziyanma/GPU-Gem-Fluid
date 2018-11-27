@@ -18,7 +18,7 @@ float4 SampleBilinearRGBA(float3 cellCoord, Texture3D<float4> tex) {
 }
 
 float SampleBilinearFloat(float3 id, Texture3D<float> tex) {
-	float3 texCoord = cellIndex2TexCoord(cellCoord);
+	float3 texCoord = cellIndex2TexCoord(id);
 	uint3 L = uint3(floor(id.x)-1, id.y, id.z);
     uint3 R = uint3(ceil(id.x+1), id.y, id.z);
 
@@ -37,5 +37,5 @@ float SampleBilinearFloat(float3 id, Texture3D<float> tex) {
     float texD = tex[D];
     float texU = tex[U];
 
-	return lerp(lerp(texL, texR, R-id.x), lerp(texB, texT, T-id.y), 0.5), lerp(texD, texU, U-id.z), 0.5);
+	return lerp(lerp(lerp(texL, texR, R-id.x), lerp(texB, texT, T-id.y), 0.5), lerp(texD, texU, U-id.z), 0.5);
 }
