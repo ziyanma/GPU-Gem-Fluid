@@ -89,7 +89,6 @@ public class SmokeSimulation : AnimationController {
     
     void InitializeObstacle() {
         Vector4 size = new Vector4(texRes.x, texRes.y, texRes.z, 0.0f);
-        Debug.Log(computeObstacle.FindKernel("CSMain"));
         computeObstacle.SetVector("_GridSize", size);
         computeObstacle.SetTexture(computeObstacle.FindKernel("CSMain"), "Result", mObstacle);
         computeObstacle.Dispatch(computeObstacle.FindKernel("CSMain"), 
