@@ -3,8 +3,8 @@
 #include "numthread.cginc"
 
 Texture3D<float> _Pressure;
-float _Divergence;
-RWTexture3D<float> Result;
+Texture3D<float> _Divergence;
+RWTexture3D<float> _WRITE;
 
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -22,5 +22,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float pD = _Pressure[uint3(id.x, id.y, id.z -1)];
     float pU = _Pressure[uint3(id.x, id.y, id.z +1)];
 
-	Result[id.xyz] = (pL + pR + pB + pT + pU + pD - selfDivergence) / 6.0; 
+	_WRITE[id.xyz] = (pL + pR + pB + pT + pU + pD - selfDivergence) / 6.0; 
 }
