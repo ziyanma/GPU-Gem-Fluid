@@ -12,20 +12,27 @@ public class SmokeSimulation : AnimationController {
 	//material & shader
 	public Material mat;
 	public ComputeShader computeObstacle;
+	
 	public int width = 64;
 	public int height = 64;
 	public int depth = 64;
 
 	//privates
-	private RenderTexture mObstacle;
-	private RenderTexture [] mDensity, mTemperature, mPressure, mVelocity, mDivergence;
-	private Vector3Int texRes = new Vector3Int(width, height, depth); // TODO: Make it flexible
+	RenderTexture mObstacle;
+	RenderTexture [] mDensity = new RenderTexture[2];
+	RenderTexture [] mTemperature  = new RenderTexture[2];
+	RenderTexture [] mPressure  = new RenderTexture[2];
+	RenderTexture [] mVelocity  = new RenderTexture[2];
+	RenderTexture [] mDivergence = new RenderTexture[2];
+
+	Vector3Int texRes; // TODO: Make it flexible
 
 
 	// Use this for initialization
 	void Start () {
+        texRes = new Vector3Int(width, height, depth);
         //initialize 3D buffers
-		initialize3DTexture(mDensity, RenderTextureFormat.RFloat);
+        initialize3DTexture(mDensity, RenderTextureFormat.RFloat);
 		initialize3DTexture(mTemperature, RenderTextureFormat.RFloat);
 		initialize3DTexture(mPressure, RenderTextureFormat.ARGB32);
 		initialize3DTexture(mVelocity, RenderTextureFormat.ARGB32);
@@ -44,7 +51,7 @@ public class SmokeSimulation : AnimationController {
     }
 
     // Update is called once per frame
-    protected void Update () {
+    protected override void Update () {
         base.Update();
         // Set up shader
         mat.SetVector("_Scale", transform.localScale);
@@ -52,7 +59,14 @@ public class SmokeSimulation : AnimationController {
         mat.SetTexture("_Obstacle", mObstacle);
     }
 
-	void OnDestroy()
+    public override void NextFrame(float dt)
+    {
+        ApplyVelocity(dt);
+
+    }
+
+
+    void OnDestroy()
 	{
 		mDensity[READ].Release();	
 		mDensity[WRITE].Release();
@@ -69,7 +83,6 @@ public class SmokeSimulation : AnimationController {
 	//helpers
 
 	void initialize3DTexture(RenderTexture[] rTex, RenderTextureFormat format) {
-		rTex = new RenderTexture[2];
 		rTex [READ] = new RenderTexture (texRes [0], texRes [1], texRes [2], format);
 		rTex [WRITE] = new RenderTexture (texRes [0], texRes [1], texRes [2], format);
 	}
@@ -83,6 +96,11 @@ public class SmokeSimulation : AnimationController {
                                 texRes.x / NUMTHREADS, 
                                 texRes.y / NUMTHREADS, 
                                 texRes.z / NUMTHREADS);
+    }
+
+    void ApplyVelocity(float dt)
+    {
+
     }
 
 	void SwapBuffer (RenderTexture [] swap) {

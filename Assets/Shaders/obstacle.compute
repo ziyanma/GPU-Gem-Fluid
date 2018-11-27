@@ -13,14 +13,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	uint x, y, z;
 	Result.GetDimensions(x, y, z);
     
-    if(id.x < 0) obstacle = 1;
-    if(id.x > x-1) obstacle = 1;
+    if(id.x <= 0) obstacle = 1;
+    if(id.x >= x-1) obstacle = 1;
     
-    if(id.y < 0) obstacle = 1;
-    if(id.y > y-1) obstacle = 1;
+    if(id.y <= 0) obstacle = 1;
+    if(id.y >= y-1) obstacle = 1;
     
-    if(id.z < 0) obstacle = 1;
-    if(id.z > z-1) obstacle = 1;
+    if(id.z <= 0) obstacle = 1;
+    if(id.z >= z-1) obstacle = 1;
     
     Result[id.xyz] = obstacle;
 }

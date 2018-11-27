@@ -10,13 +10,13 @@ public class AnimationController : MonoBehaviour {
 		
 	}
 
-    public void NextFrame(float dt)
+    public virtual void NextFrame(float dt)
     {
         Debug.Log(dt);
     }
 	
 	// Update is called once per frame
-	protected void Update () {
+	protected virtual void Update () {
 	    if (isPlaying)
         {
             NextFrame(Time.deltaTime);
