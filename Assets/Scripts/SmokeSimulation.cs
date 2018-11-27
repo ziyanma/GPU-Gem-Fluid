@@ -3,25 +3,35 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class SmokeSimulation : AnimationController {
-    public Material mat;
+    //consts
+	const int READ = 0;
+	const int WRITE = 1;
+	const int NUMTHREADS = 8; // Make sure to change numthread.cginc as well
+	const float Time_step = 0.1f;
 
-    public RenderTexture [] mTexture;
-    public RenderTexture mObstacle;
+	//material & shader
+	public Material mat;
+	public ComputeShader computeObstacle;
+	public int width = 64;
+	public int height = 64;
+	public int depth = 64;
 
-    public Vector3Int texRes = new Vector3Int(64, 64, 64); // TODO: Make it flexible
-    public int NUMTHREADS = 8; // Make sure to change numthread.cginc as well
+	//privates
+	private RenderTexture mObstacle;
+	private RenderTexture [] mDensity, mTemperature, mPressure, mVelocity, mDivergence;
+	private Vector3Int texRes = new Vector3Int(width, height, depth); // TODO: Make it flexible
 
-    public ComputeShader computeObstacle;
-    
-    // public Vector3 mSize;
 
 	// Use this for initialization
 	void Start () {
-        mTexture = new RenderTexture[2];
-        mTexture[0] = new RenderTexture(texRes[0], texRes[1], texRes[2], RenderTextureFormat.RFloat); // To Alpha 8
-        mTexture[1] = new RenderTexture(texRes[0], texRes[1], texRes[2], RenderTextureFormat.RFloat);
+        //initialize 3D buffers
+		initialize3DTexture(mDensity, RenderTextureFormat.RFloat);
+		initialize3DTexture(mTemperature, RenderTextureFormat.RFloat);
+		initialize3DTexture(mPressure, RenderTextureFormat.ARGB32);
+		initialize3DTexture(mVelocity, RenderTextureFormat.ARGB32);
+		initialize3DTexture(mDivergence, RenderTextureFormat.ARGB32);
+
         mObstacle = new RenderTexture(texRes[0], texRes[1], texRes[2], RenderTextureFormat.RFloat); // To Alpha 8
-        //mObstacle.isVolume = true;
         mObstacle.enableRandomWrite = true;
         mObstacle.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
         mObstacle.volumeDepth = texRes[2];
@@ -30,17 +40,7 @@ public class SmokeSimulation : AnimationController {
 
         InitializeObstacle();
         
-        // mat.SetTexture("_Obstacle", mObstacle);
-        // foreach (var c in mObstacle.GetPixels())
-        // {
-        //     Debug.Log(c);
-        // }
-    }
-
-    void SwapBuffer (Texture3D [] swap) {
-        Texture3D texture = swap[0];
-        swap[0] = swap[1];
-        swap[1] = texture;
+        mat.SetTexture("_Obstacle", mObstacle);
     }
 
     // Update is called once per frame
@@ -49,14 +49,30 @@ public class SmokeSimulation : AnimationController {
         // Set up shader
         mat.SetVector("_Scale", transform.localScale);
         mat.SetVector("_Translate", transform.position);
-
         mat.SetTexture("_Obstacle", mObstacle);
     }
 
-    void OnPreRender() {
-        mat.SetVector("_Scale", transform.localScale);
-        mat.SetVector("_Translate", transform.position);
-    }
+	void OnDestroy()
+	{
+		mDensity[READ].Release();	
+		mDensity[WRITE].Release();
+		mTemperature[READ].Release();
+		mTemperature[WRITE].Release();
+		mPressure[READ].Release();
+		mPressure[WRITE].Release();
+		mVelocity[READ].Release();
+		mVelocity[WRITE].Release();
+		mDivergence[READ].Release();
+		mDivergence[WRITE].Release();
+	}
+
+	//helpers
+
+	void initialize3DTexture(RenderTexture[] rTex, RenderTextureFormat format) {
+		rTex = new RenderTexture[2];
+		rTex [READ] = new RenderTexture (texRes [0], texRes [1], texRes [2], format);
+		rTex [WRITE] = new RenderTexture (texRes [0], texRes [1], texRes [2], format);
+	}
     
     void InitializeObstacle() {
         Vector4 size = new Vector4(texRes.x, texRes.y, texRes.z, 0.0f);
@@ -68,4 +84,10 @@ public class SmokeSimulation : AnimationController {
                                 texRes.y / NUMTHREADS, 
                                 texRes.z / NUMTHREADS);
     }
+
+	void SwapBuffer (RenderTexture [] swap) {
+		RenderTexture temp = swap[0];
+		swap[0] = swap[1];
+		swap[1] = temp;
+	}
 }
