@@ -25,6 +25,17 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     _WriteVelocity[id] = V;
 }
 
+#pragma kernel WaterBuoyancy
+[numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
+void WaterBuoyancy (uint3 id : SV_DispatchThreadID)
+{
+    float D = _Density[id];
+    float3 V = _ReadVelocity[id];
+    float P = _Pressure[id];
+    V += (_DeltaTime - D * _Mass) * float3(0.0f, -0.015f, 0.0f);
+    if (length(V) > 1) normalize(V);
+    _WriteVelocity[id] = V;
+}
 
 
 

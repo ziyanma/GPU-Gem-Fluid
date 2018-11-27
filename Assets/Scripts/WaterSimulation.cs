@@ -36,9 +36,9 @@ public class WaterSimulation : AnimationController {
 	void Start()
 	{
         texRes = new Vector3Int(width, height, depth);
-		initialize3DTexture(mVelocity, RenderTextureFormat.ARGB32);
-		initialize3DTexture(mPressure, RenderTextureFormat.ARGB32);
-		initialize3DTexture(mDensity, RenderTextureFormat.ARGB32);
+        initialize3DTexture(mDensity, RenderTextureFormat.RFloat);
+		initialize3DTexture(mPressure, RenderTextureFormat.RFloat);
+		initialize3DTexture(mVelocity, RenderTextureFormat.ARGBHalf);
 		mDivergence = initializeRenderTexture(RenderTextureFormat.RFloat);
         mObstacle = initializeRenderTexture(RenderTextureFormat.RFloat);
         InitializeObstacle();
@@ -51,7 +51,7 @@ public class WaterSimulation : AnimationController {
 	}
 
 	RenderTexture initializeRenderTexture(RenderTextureFormat format) {
-		RenderTexture newTex  = new RenderTexture(texRes[0], texRes[1], 0, format); // To Alpha 8
+		RenderTexture newTex  = new RenderTexture(texRes[0], texRes[1], 24, format); // To Alpha 8
         newTex.enableRandomWrite = true;
         newTex.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
         newTex.volumeDepth = texRes[2];
@@ -79,6 +79,21 @@ public class WaterSimulation : AnimationController {
     void ApplyVelocity(float dt)
     {
 		int kernel = computeAdvection.FindKernel("AdvectVelocity");
+		computeAdvection.SetFloat("_timeStep", dt);
+        computeAdvection.SetTexture(kernel, "_ReadVelocity", mVelocity[READ]);
+		computeAdvection.SetTexture(kernel, "_WriteVelocity", mVelocity[WRITE]);
+		computeAdvection.SetTexture(kernel, "_Obstacle", mObstacle);
+        computeAdvection.Dispatch(kernel, 
+                                texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+
+		SwapBuffer(mVelocity);
+    }
+
+    void WaterVelocity(float dt)
+    {
+		int kernel = computeAdvection.FindKernel("WaterVelocity");
 		computeAdvection.SetFloat("_timeStep", dt);
         computeAdvection.SetTexture(kernel, "_ReadVelocity", mVelocity[READ]);
 		computeAdvection.SetTexture(kernel, "_WriteVelocity", mVelocity[WRITE]);
@@ -140,6 +155,20 @@ public class WaterSimulation : AnimationController {
         SwapBuffer(texture);
 	}
 
+	void WaterImpulse(float dt, RenderTexture [] texture, float amount)
+	{
+		int kernel = computeImpulse.FindKernel("WaterImpulse");
+		computeImpulse.SetFloat("_DeltaTime", dt);
+		computeImpulse.SetFloat("_Amount", amount);		
+		computeImpulse.SetTexture(kernel, "_READ", texture[READ]);
+		computeImpulse.SetTexture(kernel, "_WRITE", texture[WRITE]);
+
+		computeImpulse.Dispatch(kernel, texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+        SwapBuffer(texture);
+	}
+
     void ApplyAdvection(float dt, RenderTexture [] texture)
     {
 		int kernel = computeAdvection.FindKernel("Advect");
@@ -154,14 +183,33 @@ public class WaterSimulation : AnimationController {
 		SwapBuffer(texture);
     }
 
+	void WaterBuoyancy(float dt)
+    {
+		int kernel = computeBuoyancy.FindKernel("WaterBuoyancy");
+		computeBuoyancy.SetFloat("_DeltaTime", dt);
+		computeBuoyancy.SetFloat("_Mass", 0.0125f);
+		computeBuoyancy.SetVector("_Up", Vector3.down);
+        computeBuoyancy.SetTexture(kernel,	"_ReadVelocity", mVelocity[READ]);
+		computeBuoyancy.SetTexture(kernel,	"_Density", mDensity[READ]);
+		computeBuoyancy.SetTexture(kernel,	"_Pressure", mPressure[READ]);
+		computeBuoyancy.SetTexture(kernel,	"_WriteVelocity", mVelocity[WRITE]);
+        computeBuoyancy.Dispatch(kernel, texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+		SwapBuffer(mVelocity);
+    }
+
     public override void NextFrame(float dt)
     {
 		ApplyAdvection(dt, mDensity);
-        ApplyVelocity(dt);
-		ApplyImpulse(dt, mDensity, 1.0f);
+        // ApplyVelocity(dt);
+        WaterVelocity(dt);
+		WaterBuoyancy(dt);
+		// ApplyImpulse(dt, mDensity, 1.0f);
+		WaterImpulse(dt, mDensity, 1.0f);
 		ComputeDivergence();
 		ComputePressure();
-		// Project();
+		Project();
 	}
 	
 	// Update is called once per frame

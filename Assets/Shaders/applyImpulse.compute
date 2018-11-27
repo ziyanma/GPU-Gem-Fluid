@@ -20,3 +20,18 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 	_WRITE[id] = _READ[id] + amount;
 }
+
+#pragma kernel WaterImpulse
+[numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
+void WaterImpulse (uint3 id : SV_DispatchThreadID)
+{
+	uint x, y, z;
+	_READ.GetDimensions(x, y, z);
+	//define source pose:
+	float3 sourcePos = float3(x/2, y/2, z/2);
+	float dist = length(id - sourcePos) * length(id - sourcePos);
+	float radius = 8 * 8;
+	float amount = exp(-dist/radius) * _Amount * _DeltaTime;
+
+	_WRITE[id] = _READ[id] + amount;
+}
