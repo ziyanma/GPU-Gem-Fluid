@@ -3,7 +3,6 @@
 #include "numthread.cginc"
 
 Texture3D<float> _Pressure;
-SamplerState ps_linear_clamp_sampler;
 float _Divergence;
 RWTexture3D<float> Result;
 

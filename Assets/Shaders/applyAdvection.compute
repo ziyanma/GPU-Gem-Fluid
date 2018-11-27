@@ -1,0 +1,50 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel AdvictVelocity
+#include "numthread.cginc"
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+float _timeStep;
+
+Texture3D<float> _Obstacle;
+SamplerState vel_Linear_Clamp_Sampler;
+
+float3 cellIndex2TexCoord(float3 index)
+{
+	float w, h, d;
+	_Obstacle.GetDimensions(w,h,d);
+  // Convert a value in the range [0,gridSize] to one in the range [0,1].
+	return float3(index.x / w,
+                index.y / h,
+                index.z / d);
+}
+
+float4 SampleBilinearRGBA(float3 cellCoord, Texture3D<float4> tex) {
+	float3 texCoord = cellIndex2TexCoord(cellCoord);
+	return tex.SampleLevel(vel_Linear_Clamp_Sampler, texCoord, 0);
+}
+
+float SampleBilinearFloat(float3 cellCoord, Texture3D<float> tex) {
+	float3 texCoord = cellIndex2TexCoord(cellCoord);
+	return tex.SampleLevel(vel_Linear_Clamp_Sampler, texCoord, 0);
+}
+
+Texture3D<float4> _ReadVelocity;
+RWTexture3D<float4> _WriteVelocity;
+
+[numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
+void AdvictVelocity (uint3 id : SV_DispatchThreadID)
+{
+	// float4 centerVel = _Velocity.Sample(vel_Linear_Clamp_Sampler, id.xyz);
+	float4 centerVel = _ReadVelocity[id.xyz];
+	
+	if (_Obstacle[id.xyz] > 0.1) {
+		_WriteVelocity[id.xyz] = float4(0, 0, 0, 0);
+		return;
+	}
+
+	float3 pos = id;
+	pos -= _timeStep * float3(centerVel.xyz);
+
+	_WriteVelocity[id.xyz] = SampleBilinearRGBA(pos, _ReadVelocity);
+}

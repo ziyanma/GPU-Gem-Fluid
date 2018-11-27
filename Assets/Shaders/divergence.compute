@@ -4,12 +4,7 @@
 #include "numthread.cginc"
 
 Texture3D<float4> _Velocity;
-SamplerState vel_linear_clamp_sampler {
-    Filter = MIN_MAG_MIP_POINT;
-    AddressU = Clamp;
-    AddressV = Clamp;
-    AddressW = Clamp;
-};
+SamplerState vel_linear_clamp_sampler;
 
 RWTexture3D<float> Result;
 
@@ -24,7 +19,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     float3 D = _Velocity[uint3(id.x, id.y, id.z -1)].xyz;
     float3 U = _Velocity[uint3(id.x, id.y, id.z +1)].xyz;
-    
+
     float divergence = 0.5 * ((R.x - L.x) + (T.y - B.y) + (U.z - D.z));
 	Result[id.xyz] = divergence;
 }
