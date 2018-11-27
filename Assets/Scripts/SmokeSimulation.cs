@@ -12,6 +12,8 @@ public class SmokeSimulation : AnimationController {
 	//material & shader
 	public Material mat;
 	public ComputeShader computeObstacle;
+	public ComputeShader advectVelocity;
+	public ComputeShader computeDivergence;
 	
 	public int width = 64;
 	public int height = 64;
@@ -19,11 +21,12 @@ public class SmokeSimulation : AnimationController {
 
 	//privates
 	RenderTexture mObstacle;
+	RenderTexture mDivergence;
 	RenderTexture [] mDensity = new RenderTexture[2];
 	RenderTexture [] mTemperature  = new RenderTexture[2];
 	RenderTexture [] mPressure  = new RenderTexture[2];
 	RenderTexture [] mVelocity  = new RenderTexture[2];
-	RenderTexture [] mDivergence = new RenderTexture[2];
+	
 
 	Vector3Int texRes; // TODO: Make it flexible
 
@@ -36,7 +39,9 @@ public class SmokeSimulation : AnimationController {
 		initialize3DTexture(mTemperature, RenderTextureFormat.RFloat);
 		initialize3DTexture(mPressure, RenderTextureFormat.ARGB32);
 		initialize3DTexture(mVelocity, RenderTextureFormat.ARGB32);
-		initialize3DTexture(mDivergence, RenderTextureFormat.ARGB32);
+
+		//no readwrite 
+		mDivergence = initializeRenderTexture(RenderTextureFormat.RFloat);
 
         mObstacle = new RenderTexture(texRes[0], texRes[1], texRes[2], RenderTextureFormat.RFloat); // To Alpha 8
         mObstacle.enableRandomWrite = true;
@@ -76,15 +81,24 @@ public class SmokeSimulation : AnimationController {
 		mPressure[WRITE].Release();
 		mVelocity[READ].Release();
 		mVelocity[WRITE].Release();
-		mDivergence[READ].Release();
-		mDivergence[WRITE].Release();
+		mDivergence.Release();
 	}
 
 	//helpers
 
+	RenderTexture initializeRenderTexture(RenderTextureFormat format) {
+		RenderTexture newTex  = new RenderTexture(texRes[0], texRes[1], texRes[2], format); // To Alpha 8
+        newTex.enableRandomWrite = true;
+        newTex.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+        newTex.volumeDepth = texRes[2];
+        newTex.isPowerOfTwo = true;
+        newTex.Create();
+		return newTex;
+	}
+
 	void initialize3DTexture(RenderTexture[] rTex, RenderTextureFormat format) {
-		rTex [READ] = new RenderTexture (texRes [0], texRes [1], texRes [2], format);
-		rTex [WRITE] = new RenderTexture (texRes [0], texRes [1], texRes [2], format);
+		rTex [READ] = initializeRenderTexture(format);
+		rTex [WRITE] = initializeRenderTexture(format);
 	}
     
     void InitializeObstacle() {
@@ -99,8 +113,27 @@ public class SmokeSimulation : AnimationController {
 
     void ApplyVelocity(float dt)
     {
-
+		advectVelocity.SetFloat("_timeStep", dt);
+		advectVelocity.SetTexture(computeObstacle.FindKernel("CSMain"),
+								"_Velocity", 
+								mVelocity[READ]);
+		advectVelocity.Dispatch(computeObstacle.FindKernel("CSMain"), 
+                                texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+		SwapBuffer(mVelocity);
     }
+
+	void ComputeDivergence()
+	{
+		computeDivergence.SetTexture(computeDivergence.FindKernel("CSMain"), 
+									"_Velocity",
+									mVelocity[READ]);
+		computeDivergence.Dispatch(computeObstacle.FindKernel("CSMain"), 
+                                texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+	}
 
 	void SwapBuffer (RenderTexture [] swap) {
 		RenderTexture temp = swap[0];
