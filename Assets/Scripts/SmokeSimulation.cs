@@ -21,11 +21,12 @@ public class SmokeSimulation : AnimationController {
 
 	//privates
 	RenderTexture mObstacle;
+	RenderTexture mDivergence;
 	RenderTexture [] mDensity = new RenderTexture[2];
 	RenderTexture [] mTemperature  = new RenderTexture[2];
 	RenderTexture [] mPressure  = new RenderTexture[2];
 	RenderTexture [] mVelocity  = new RenderTexture[2];
-	RenderTexture [] mDivergence = new RenderTexture[2];
+	
 
 	Vector3Int texRes; // TODO: Make it flexible
 
@@ -38,7 +39,9 @@ public class SmokeSimulation : AnimationController {
 		initialize3DTexture(mTemperature, RenderTextureFormat.RFloat);
 		initialize3DTexture(mPressure, RenderTextureFormat.ARGB32);
 		initialize3DTexture(mVelocity, RenderTextureFormat.ARGB32);
-		initialize3DTexture(mDivergence, RenderTextureFormat.ARGB32);
+
+		//no readwrite 
+		mDivergence = initializeRenderTexture(RenderTextureFormat.RFloat);
 
         mObstacle = new RenderTexture(texRes[0], texRes[1], texRes[2], RenderTextureFormat.RFloat); // To Alpha 8
         mObstacle.enableRandomWrite = true;
@@ -78,15 +81,24 @@ public class SmokeSimulation : AnimationController {
 		mPressure[WRITE].Release();
 		mVelocity[READ].Release();
 		mVelocity[WRITE].Release();
-		mDivergence[READ].Release();
-		mDivergence[WRITE].Release();
+		mDivergence.Release();
 	}
 
 	//helpers
 
+	RenderTexture initializeRenderTexture(RenderTextureFormat format) {
+		RenderTexture newTex  = new RenderTexture(texRes[0], texRes[1], texRes[2], format); // To Alpha 8
+        newTex.enableRandomWrite = true;
+        newTex.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+        newTex.volumeDepth = texRes[2];
+        newTex.isPowerOfTwo = true;
+        newTex.Create();
+		return newTex;
+	}
+
 	void initialize3DTexture(RenderTexture[] rTex, RenderTextureFormat format) {
-		rTex [READ] = new RenderTexture (texRes [0], texRes [1], texRes [2], format);
-		rTex [WRITE] = new RenderTexture (texRes [0], texRes [1], texRes [2], format);
+		rTex [READ] = initializeRenderTexture(format);
+		rTex [WRITE] = initializeRenderTexture(format);
 	}
     
     void InitializeObstacle() {
