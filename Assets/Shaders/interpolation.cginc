@@ -13,10 +13,12 @@ float3 cellIndex2TexCoord(float3 index)
 
 float4 SampleBilinearRGBA(float3 cellCoord, Texture3D<float4> tex) {
 	float3 texCoord = cellIndex2TexCoord(cellCoord);
-	return tex.SampleLevel(vel_Linear_Clamp_Sampler, texCoord, 0);
+	return tex.SampleLevel(vel_Linear_Clamp_Sampler, texCoord, 0);	
+	// return tex.Sample(vel_Linear_Clamp_Sampler, texCoord);
 }
 
 float SampleBilinearFloat(float3 cellCoord, Texture3D<float> tex) {
 	float3 texCoord = cellIndex2TexCoord(cellCoord);
 	return tex.SampleLevel(vel_Linear_Clamp_Sampler, texCoord, 0);
+	// return tex.Sample(vel_Linear_Clamp_Sampler, texCoord);
 }

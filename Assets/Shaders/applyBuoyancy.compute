@@ -21,6 +21,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         V += (_DeltaTime * (T - _AmbientTemperature) - D * _Mass) * _Up;
     // V += (_DeltaTime * (_AmbientTemperature - T ) * D * _Mass * P) * _Up;
     // V += 
+    if (length(V) > 1) normalize(V);
     _WriteVelocity[id] = V;
 }
 
