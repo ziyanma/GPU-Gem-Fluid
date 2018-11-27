@@ -72,7 +72,7 @@ public class SmokeSimulation : AnimationController {
 		ApplyImpulse(dt, mDensity);
 
 		ComputeDivergence();
-
+		ComputePressure();
 		Project();
     }
 
@@ -206,7 +206,7 @@ public class SmokeSimulation : AnimationController {
 		computeProjection.SetTexture(kernel, "_Pressure", mPressure[READ]);
 		computeProjection.SetTexture(kernel, "_Velocity", mVelocity[READ]);
 		computeProjection.SetTexture(kernel, "_WRITE", mVelocity[WRITE]);
-		computeJacobi.Dispatch(kernel, texRes.x / NUMTHREADS, 
+		computeProjection.Dispatch(kernel, texRes.x / NUMTHREADS, 
 										texRes.y / NUMTHREADS, 
 										texRes.z / NUMTHREADS);
 		SwapBuffer(mVelocity);

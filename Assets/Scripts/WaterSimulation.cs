@@ -17,6 +17,7 @@ public class WaterSimulation : AnimationController {
 	public ComputeShader computeJacobi;
     public ComputeShader computeBuoyancy;
     public ComputeShader computeDivergence;
+	public ComputeShader computeProjection;
 	public int width = 64;
 	public int height = 64;
 	public int depth = 64;
@@ -109,11 +110,25 @@ public class WaterSimulation : AnimationController {
 		SwapBuffer(mPressure);
 	}
 
+	void Project()
+	{
+		int kernel = computeProjection.FindKernel("CSMain");
+		computeProjection.SetTexture(kernel, "_Obstacle", mObstacle);
+		computeProjection.SetTexture(kernel, "_Pressure", mPressure[READ]);
+		computeProjection.SetTexture(kernel, "_Velocity", mVelocity[READ]);
+		computeProjection.SetTexture(kernel, "_WRITE", mVelocity[WRITE]);
+		computeProjection.Dispatch(kernel, texRes.x / NUMTHREADS, 
+										texRes.y / NUMTHREADS, 
+										texRes.z / NUMTHREADS);
+		SwapBuffer(mVelocity);
+	}
+
     public override void NextFrame(float dt)
     {
         ApplyVelocity(dt);
 		ComputeDivergence();
 		ComputePressure();
+		Project();
 	}
 	
 	// Update is called once per frame
