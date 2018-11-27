@@ -22,9 +22,9 @@ public class SmokeSimulation : AnimationController {
 	//privates
 	RenderTexture mObstacle;
 	RenderTexture mDivergence;
+	RenderTexture mPressure;
 	RenderTexture [] mDensity = new RenderTexture[2];
 	RenderTexture [] mTemperature  = new RenderTexture[2];
-	RenderTexture [] mPressure  = new RenderTexture[2];
 	RenderTexture [] mVelocity  = new RenderTexture[2];
 	
 
@@ -37,11 +37,12 @@ public class SmokeSimulation : AnimationController {
         //initialize 3D buffers
         initialize3DTexture(mDensity, RenderTextureFormat.RFloat);
 		initialize3DTexture(mTemperature, RenderTextureFormat.RFloat);
-		initialize3DTexture(mPressure, RenderTextureFormat.ARGB32);
+		
 		initialize3DTexture(mVelocity, RenderTextureFormat.ARGB32);
 
 		//no readwrite 
 		mDivergence = initializeRenderTexture(RenderTextureFormat.RFloat);
+		mPressure = initializeRenderTexture(RenderTextureFormat.RFloat);
 
         mObstacle = new RenderTexture(texRes[0], texRes[1], texRes[2], RenderTextureFormat.RFloat); // To Alpha 8
         mObstacle.enableRandomWrite = true;
@@ -77,11 +78,10 @@ public class SmokeSimulation : AnimationController {
 		mDensity[WRITE].Release();
 		mTemperature[READ].Release();
 		mTemperature[WRITE].Release();
-		mPressure[READ].Release();
-		mPressure[WRITE].Release();
 		mVelocity[READ].Release();
 		mVelocity[WRITE].Release();
 		mDivergence.Release();
+		mPressure.Release();
 	}
 
 	//helpers
@@ -133,6 +133,11 @@ public class SmokeSimulation : AnimationController {
                                 texRes.x / NUMTHREADS, 
                                 texRes.y / NUMTHREADS, 
                                 texRes.z / NUMTHREADS);
+	}
+
+	void ComputePressure() 
+	{
+		
 	}
 
 	void SwapBuffer (RenderTexture [] swap) {

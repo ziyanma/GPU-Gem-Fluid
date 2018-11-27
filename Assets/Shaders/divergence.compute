@@ -4,31 +4,20 @@
 #include "numthread.cginc"
 
 Texture3D<float4> _Velocity;
-float Result;
+SamplerState vel_linear_clamp_sampler;
+RWTexture3D<float> Result;
 
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-	int3 _Size;
-	_Velocity.GetDimensions(_Size.x, _Size.y, _Size.z);
-
-	int idxL = max(0, id.x-1) + id.y*_Size.x + id.z*_Size.x*_Size.y;
-    int idxR = min(_Size.x-1, id.x+1) + id.y*_Size.x + id.z*_Size.x*_Size.y;
+	float3 L = _Velocity.Sample(vel_linear_clamp_sampler, uint3(id.x-1, id.y, id.z));
+    float3 R = _Velocity.Sample(vel_linear_clamp_sampler, uint3(id.x+1, id.y, id.z));
     
-    int idxB = id.x + max(0, id.y-1)*_Size.x + id.z*_Size.x*_Size.y;
-    int idxT = id.x + min(_Size.y-1, id.y+1)*_Size.x + id.z*_Size.x*_Size.y;
+    float3 B = _Velocity.Sample(vel_linear_clamp_sampler, uint3(id.x, id.y-1, id.z));
+    float3 T = _Velocity.Sample(vel_linear_clamp_sampler, uint3(id.x, id.y+1, id.z));
     
-    int idxD = id.x + id.y*_Size.x + max(0, id.z-1)*_Size.x*_Size.y;
-    int idxU = id.x + id.y*_Size.x + min(_Size.z-1, id.z+1)*_Size.x*_Size.y;
-
-	float3 L = _Velocity[ idxL ];
-    float3 R = _Velocity[ idxR ];
-    
-    float3 B = _Velocity[ idxB ];
-    float3 T = _Velocity[ idxT ];
-    
-    float3 D = _Velocity[ idxD ];
-    float3 U = _Velocity[ idxU ];
+    float3 D = _Velocity.Sample(vel_linear_clamp_sampler, uint3(id.x, id.y, id.z -1));
+    float3 U = _Velocity.Sample(vel_linear_clamp_sampler, uint3(id.x, id.y, id.z +1));
     float divergence = 0.5 * ((R.x - L.x) + (T.y - B.y) + (U.z - D.z));
-	Result = divergence;
+	Result[id.xyz] = divergence;
 }
