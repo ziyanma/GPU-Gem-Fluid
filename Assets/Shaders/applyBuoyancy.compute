@@ -7,7 +7,7 @@ float _AmbientTemperature, _DeltaTime, _Mass;
 
 RWTexture3D<float3> _WriteVelocity;
 Texture3D<float3> _ReadVelocity;
-Texture3D<float> _Density, _Temperature;
+Texture3D<float> _Density, _Temperature, _Pressure;
 
 [numthreads(NUMTHREADS, NUMTHREADS, NUMTHREADS)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -15,10 +15,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float T = _Temperature[id];
     float D = _Density[id];
     float3 V = _ReadVelocity[id];
-    
+    float P = _Pressure[id];
     // 1 / T0 - 1 / T in GPU Gem
-    if(T > _AmbientTemperature)
-        V += (_DeltaTime * (T - _AmbientTemperature) - D * _Mass) * _Up;
+    // if(T > _AmbientTemperature)
+    //     V += (_DeltaTime * (T - _AmbientTemperature) - D * _Mass) * _Up;
+    V += (_DeltaTime * (_AmbientTemperature - T ) * D * _Mass * P) * _Up;
     
     _WriteVelocity[id] = V;
 }

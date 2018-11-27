@@ -72,6 +72,7 @@ Shader "Custom/Smoke" {
 				float3 translate = (pos - _Translate) / _Scale + float3(0.5, 0.5, 0.5);
 				// int3 sampler = translate * int3(x,y,z);
                 float samp = _Density.Sample(vel_Linear_Clamp_Sampler, translate);
+                if (samp > 1.0f) samp = 1.0f;
                 return samp * _SmokeColor;
 			}
 

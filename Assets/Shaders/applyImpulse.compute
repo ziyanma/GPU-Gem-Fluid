@@ -3,7 +3,7 @@
 
 #include "numthread.cginc"
 
-float _DeltaTime;
+float _DeltaTime, _Amount;
 Texture3D <float> _READ;
 RWTexture3D<float> _WRITE;
 
@@ -16,7 +16,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 sourcePos = float3(x/2, 0, x/2);
 	float dist = length(id - sourcePos) * length(id - sourcePos);
 	float radius = 16 * 16;
-	float amount = exp(-dist/radius) * _DeltaTime;
+	float amount = exp(-dist/radius) * _Amount * _DeltaTime;
 
 	_WRITE[id] = _READ[id] + amount;
 }
