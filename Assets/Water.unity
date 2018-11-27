@@ -124,6 +124,7 @@ GameObject:
   - component: {fileID: 958692660}
   - component: {fileID: 958692659}
   - component: {fileID: 958692658}
+  - component: {fileID: 958692662}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -145,7 +146,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: daba1f079d108ee4ea059313c7cd9363, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -197,6 +198,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &958692662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 958692657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0440376dc296d9a438d59c29750eed92, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isPlaying: 1
+  mat: {fileID: 2100000, guid: daba1f079d108ee4ea059313c7cd9363, type: 2}
+  computeObstacle: {fileID: 7200000, guid: 655351c57baa19b4f896cf2fa4260f17, type: 3}
+  computeAdvection: {fileID: 7200000, guid: 23267d23940f188429a265f1140a59d9, type: 3}
+  computeJacobi: {fileID: 7200000, guid: a453b81383cbe447c896e5366ffde989, type: 3}
+  computeBuoyancy: {fileID: 7200000, guid: 787e22e8ebdaa9e47abac84409138162, type: 3}
+  computeDivergence: {fileID: 7200000, guid: 6ee82ebc911b947eebd0eff3dc85a851, type: 3}
+  computeProjection: {fileID: 7200000, guid: 9d6c8683d3ed3475ebfca71a4d2cca95, type: 3}
+  width: 64
+  height: 64
+  depth: 64
 --- !u!1 &1468534950
 GameObject:
   m_ObjectHideFlags: 0
