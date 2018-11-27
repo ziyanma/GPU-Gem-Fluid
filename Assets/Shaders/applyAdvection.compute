@@ -38,7 +38,7 @@ void Advect (uint3 id : SV_DispatchThreadID)
 	float4 centerVel = _ReadVelocity[id];
 	
 	if (_Obstacle[id] > 0.1) {
-		_WriteVelocity[id] = float4(0, 0, 0, 0);
+		_Write[id] = 0;
 		return;
 	}
 

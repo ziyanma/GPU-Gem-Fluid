@@ -34,6 +34,9 @@ public class SmokeSimulation : AnimationController {
 
 	Vector3Int texRes; // TODO: Make it flexible
 
+	public float mTemperatureAmount = 10.0f;
+	public float mDensityAmount = 1.0f;
+
 	// Use this for initialization
 	void Start () {
         texRes = new Vector3Int(width, height, depth);
@@ -66,17 +69,17 @@ public class SmokeSimulation : AnimationController {
 
     public override void NextFrame(float dt)
     {
-		ApplyAdvection(dt, mTemperature);
-		ApplyAdvection(dt, mDensity);
-        ApplyVelocity(dt);
+		// ApplyAdvection(dt, mTemperature);
+		// ApplyAdvection(dt, mDensity);
+        // ApplyVelocity(dt);
 		
-		ApplyBuoyancy(dt);
-		// ApplyImpulse(dt, mTemperature);
-		ApplyImpulse(dt, mDensity);
+		// ApplyBuoyancy(dt);
+		ApplyImpulse(dt, mTemperature, mTemperatureAmount);
+		ApplyImpulse(dt, mDensity, mDensityAmount);
 
-		ComputeDivergence();
-		ComputePressure();
-		Project();
+		// ComputeDivergence();
+		// ComputePressure();
+		// Project();
     }
 
 
@@ -154,10 +157,11 @@ public class SmokeSimulation : AnimationController {
 		int kernel = computeBuoyancy.FindKernel("CSMain");
 		computeBuoyancy.SetFloat("_DeltaTime", dt);
 		computeBuoyancy.SetFloat("_Mass", 0.0125f);
-		computeBuoyancy.SetFloat("_AmbientTemperature", 0.0f);
+		computeBuoyancy.SetFloat("_AmbientTemperature", 1.0f);
 		computeBuoyancy.SetVector("_Up", Vector3.up);
         computeBuoyancy.SetTexture(kernel,	"_ReadVelocity", mVelocity[READ]);
 		computeBuoyancy.SetTexture(kernel,	"_Density", mDensity[READ]);
+		computeBuoyancy.SetTexture(kernel,	"_Pressure", mPressure[READ]);		
 		computeBuoyancy.SetTexture(kernel,	"_Temperature", mTemperature[READ]);
 		computeBuoyancy.SetTexture(kernel,	"_WriteVelocity", mVelocity[WRITE]);
         computeBuoyancy.Dispatch(kernel, texRes.x / NUMTHREADS, 
@@ -166,10 +170,11 @@ public class SmokeSimulation : AnimationController {
 		SwapBuffer(mVelocity);
     }
 
-	void ApplyImpulse(float dt, RenderTexture [] texture)
+	void ApplyImpulse(float dt, RenderTexture [] texture, float amount)
 	{
 		int kernel = computeImpulse.FindKernel("CSMain");
 		computeImpulse.SetFloat("_DeltaTime", dt);
+		computeImpulse.SetFloat("_Amount", amount);		
 		computeImpulse.SetTexture(kernel, "_READ", texture[READ]);
 		computeImpulse.SetTexture(kernel, "_WRITE", texture[WRITE]);
 
