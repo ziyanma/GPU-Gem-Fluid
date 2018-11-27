@@ -11,7 +11,7 @@ RWTexture3D<float> _WRITE;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	// divergence at center cell.
-	float selfDivergence = _Pressure[id];
+	float selfDivergence = _Divergence[id];
 
     uint3 L = uint3(id.x-1, id.y, id.z);
     uint3 R = uint3(id.x+1, id.y, id.z);

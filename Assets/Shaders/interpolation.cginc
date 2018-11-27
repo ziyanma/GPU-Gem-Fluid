@@ -5,7 +5,7 @@ float3 cellIndex2TexCoord(float3 index)
 {
 	float w, h, d;
 	_Obstacle.GetDimensions(w,h,d);
-  // Convert a value in the range [0,gridSize] to one in the range [0,1].
+	// Convert a value in the range [0,gridSize] to one in the range [0,1].
 	return float3(index.x / w,
                 index.y / h,
                 index.z / d);
