@@ -105,14 +105,14 @@
 
 			SamplerState vel_Linear_Clamp_Sampler;
 
-			float4 sampleColor(float3 pos) {
+			float4 sampleColor(float3 pos, float4 color) {
 				// uint x,y,z;
 				// _Obstacle.GetDimiensions(x,y,z);
 
 				float3 translate = (pos - _Translate) / _Scale + float3(0.5, 0.5, 0.5);
 				// int3 sampler = translate * int3(x,y,z);
                 float samp = _Density.Sample(vel_Linear_Clamp_Sampler, translate);
-                return samp * _BaseColor;
+                return samp * color;
 			}
 			
 			float Fresnel(float3 viewVector, float3 worldNormal, float bias, float power)
@@ -166,16 +166,8 @@
 				if (numStep > 64) numStep = 64;
 
 				float3 rayPos = rayStart;
-				
-                float4 FinalColor = float4(0.0, 0.0, 0.0, 0.0);
-				for (int i = 0; i < numStep; i++, rayPos += ds) {
-					float4 sample = sampleColor(rayPos);
-					FinalColor.xyz += sample.xyz * sample.a * (1 - FinalColor.a);
-					FinalColor.a += sample.a * (1 - FinalColor.a);
-				}
-				// return FinalColor;
 
-                float4 baseColor = FinalColor;
+                float4 baseColor = _BaseColor;
 
 				float refl2Refr = Fresnel(direction, float3(0.0f,1.0f,0.0f), FRESNEL_BIAS, FRESNEL_POWER);
 		
@@ -192,7 +184,14 @@
 				baseColor = baseColor + spec * _SpecularColor;
 				
 				UNITY_APPLY_FOG(i.fogCoord, baseColor);
-				return baseColor;
+				
+                float4 FinalColor = float4(0.0, 0.0, 0.0, 0.0);
+				for (int i = 0; i < numStep; i++, rayPos += ds) {
+					float4 sample = sampleColor(rayPos, baseColor);
+					FinalColor.xyz += sample.xyz * sample.a * (1 - FinalColor.a);
+					FinalColor.a += sample.a * (1 - FinalColor.a);
+				}
+				return FinalColor;
 			}
 			ENDCG
 		}
