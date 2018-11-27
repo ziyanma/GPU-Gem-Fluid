@@ -18,15 +18,17 @@ public class WaterSimulation : AnimationController {
     public ComputeShader computeBuoyancy;
     public ComputeShader computeDivergence;
 	public ComputeShader computeProjection;
-	public int width = 64;
-	public int height = 64;
-	public int depth = 64;
+	public ComputeShader computeImpulse;
+	public int width = 128;
+	public int height = 128;
+	public int depth = 128;
 
 	//privates
 	RenderTexture mObstacle;
 	RenderTexture mDivergence;
 	RenderTexture [] mPressure = new RenderTexture[2];
 	RenderTexture [] mVelocity = new RenderTexture[2];
+	RenderTexture [] mDensity = new RenderTexture[2];
 
 	Vector3Int texRes; // TODO: Make it flexible
 
@@ -36,6 +38,7 @@ public class WaterSimulation : AnimationController {
         texRes = new Vector3Int(width, height, depth);
 		initialize3DTexture(mVelocity, RenderTextureFormat.ARGB32);
 		initialize3DTexture(mPressure, RenderTextureFormat.ARGB32);
+		initialize3DTexture(mDensity, RenderTextureFormat.ARGB32);
 		mDivergence = initializeRenderTexture(RenderTextureFormat.RFloat);
         mObstacle = initializeRenderTexture(RenderTextureFormat.RFloat);
         InitializeObstacle();
@@ -123,12 +126,42 @@ public class WaterSimulation : AnimationController {
 		SwapBuffer(mVelocity);
 	}
 
+	void ApplyImpulse(float dt, RenderTexture [] texture, float amount)
+	{
+		int kernel = computeImpulse.FindKernel("CSMain");
+		computeImpulse.SetFloat("_DeltaTime", dt);
+		computeImpulse.SetFloat("_Amount", amount);		
+		computeImpulse.SetTexture(kernel, "_READ", texture[READ]);
+		computeImpulse.SetTexture(kernel, "_WRITE", texture[WRITE]);
+
+		computeImpulse.Dispatch(kernel, texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+        SwapBuffer(texture);
+	}
+
+    void ApplyAdvection(float dt, RenderTexture [] texture)
+    {
+		int kernel = computeAdvection.FindKernel("Advect");
+		computeAdvection.SetFloat("_timeStep", dt);
+        computeAdvection.SetTexture(kernel,	"_ReadVelocity", mVelocity[READ]);
+		computeAdvection.SetTexture(kernel,	"_Obstacle", mObstacle);
+		computeAdvection.SetTexture(kernel,	"_Read", texture[READ]);
+		computeAdvection.SetTexture(kernel,	"_Write", texture[WRITE]);
+        computeAdvection.Dispatch(kernel, texRes.x / NUMTHREADS, 
+                                texRes.y / NUMTHREADS, 
+                                texRes.z / NUMTHREADS);
+		SwapBuffer(texture);
+    }
+
     public override void NextFrame(float dt)
     {
+		ApplyAdvection(dt, mDensity);
         ApplyVelocity(dt);
+		ApplyImpulse(dt, mDensity, 1.0f);
 		ComputeDivergence();
 		ComputePressure();
-		Project();
+		// Project();
 	}
 	
 	// Update is called once per frame
@@ -139,6 +172,7 @@ public class WaterSimulation : AnimationController {
         mat.SetVector("_Scale", transform.localScale);
         mat.SetVector("_Translate", transform.position);
         mat.SetTexture("_Obstacle", mObstacle);
+		mat.SetTexture("_Density", mDensity[READ]);
 	}
 	
     void OnDestroy()
@@ -147,6 +181,8 @@ public class WaterSimulation : AnimationController {
 		mVelocity[WRITE].Release();
 		mPressure[READ].Release();
 		mPressure[WRITE].Release();
+		mDensity[READ].Release();	
+		mDensity[WRITE].Release();
 		mDivergence.Release();
 		mObstacle.Release();
 	}

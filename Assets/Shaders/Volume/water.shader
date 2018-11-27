@@ -9,26 +9,25 @@
 		_ReflectionColor ("Reflection color", COLOR)  = ( .54, .95, .99, 0.5)
 		_SpecularColor ("Specular color", COLOR)  = ( .72, .72, .72, 1)
 		_WorldLightDir ("Specular light direction", Vector) = (0.0, 0.1, -0.5, 0.0)
+		_Shininess ("Shininess", Range (2.0, 500.0)) = 200.0
 
 		_Scale ("Scale", Vector) = (1,1,1)
-		_Translate ("Translate", Vector) = (0,0,0)
+		_Translate ("Translate", Vector) = (1,1,1)
 		_StepSize ("StepSize", Range(0.05, 1)) = 0.1
 		_Obstacle ("Obstacle", 3D) = "defaulttexture" {}
         _Density ("Density", 3D) = "defaulttexture" {}
 	}
 	SubShader
 	{
-		Tags {"RenderType"="Transparent" "Queue"="Transparent"}
+		Tags {"Queue"="Transparent"}
 		LOD 200
 
 		GrabPass { "_RefractionTex" }
 
 		Pass
 		{
+			Cull front
 			Blend SrcAlpha OneMinusSrcAlpha
-			ZTest LEqual
-			ZWrite Off
-			Cull Off
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
@@ -106,30 +105,20 @@
 
 			SamplerState vel_Linear_Clamp_Sampler;
 
-			float4 sampleColor(float3 pos) {
+			float4 sampleColor(float3 pos, float4 color) {
 				// uint x,y,z;
 				// _Obstacle.GetDimiensions(x,y,z);
 
 				float3 translate = (pos - _Translate) / _Scale + float3(0.5, 0.5, 0.5);
 				// int3 sampler = translate * int3(x,y,z);
                 float samp = _Density.Sample(vel_Linear_Clamp_Sampler, translate);
-                return samp * _WaterColor;
-			}
-
-            float sampleAlpha(float3 pos) {
-				// uint x,y,z;
-				// _Obstacle.GetDimiensions(x,y,z);
-
-				float3 translate = (pos - _Translate) / _Scale + float3(0.5, 0.5, 0.5);
-				// int3 sampler = translate * int3(x,y,z);
-                float samp = _Density.Sample(vel_Linear_Clamp_Sampler, translate);
-                return samp;
+                return samp * color;
 			}
 			
-			float Fresnel(half3 viewVector, half3 worldNormal, half bias, half power)
+			float Fresnel(float3 viewVector, float3 worldNormal, float bias, float power)
 			{
-				half facing =  clamp(1.0-max(dot(-viewVector, worldNormal), 0.0), 0.0,1.0);	
-				half refl2Refr = saturate(bias+(1.0-bias) * pow(facing,power));	
+				float facing =  clamp(1.0-max(dot(-viewVector, worldNormal), 0.0), 0.0,1.0);	
+				float refl2Refr = saturate(bias+(1.0-bias) * pow(facing,power));	
 				return refl2Refr;	
 			}
 
@@ -147,12 +136,14 @@
 				float3 cameraPos = _WorldSpaceCameraPos;
 				float3 direction = normalize(i.worldPos - cameraPos);
 				float stepSize =  _StepSize > 0 ? _StepSize : 0.1f;
-				half4 distortOffset = half4(float3(0.0f,1.0f,0.0f).xz * REALTIME_DISTORTION * 10.0, 0, 0);
+				float4 distortOffset = float4(float3(0.0f,1.0f,0.0f).xz * REALTIME_DISTORTION * 10.0, 0, 0);
 				float4 grabPassPos;
 				grabPassPos.xy = ( float2( i.pos.x, i.pos.y ) + i.pos.w ) * 0.5;
 				grabPassPos.zw = i.pos.zw;
-				half4 grabWithOffset = grabPassPos + distortOffset;
+				float4 screenWithOffset = ComputeNonStereoScreenPos(i.pos) + distortOffset;
+				float4 grabWithOffset = grabPassPos + distortOffset;
 				float4 rtRefractions = tex2Dproj(_RefractionTex, UNITY_PROJ_COORD(grabWithOffset));
+				float4 rtReflections = tex2Dproj(_ReflectionTex, UNITY_PROJ_COORD(screenWithOffset));
 
 				Ray ray;
 				ray.origin = cameraPos;
@@ -175,15 +166,8 @@
 				if (numStep > 64) numStep = 64;
 
 				float3 rayPos = rayStart;
-				
-                float4 FinalColor = float4(0.0, 0.0, 0.0, 0.0);
-				for (int i = 0; i < numStep; i++, rayPos += ds) {
-					float4 sample = sampleColor(rayPos);
-					FinalColor.xyz += sample.xyz * sample.a * (1 - FinalColor.a);
-					FinalColor.a += sample.a * (1 - FinalColor.a);
-				}
 
-                float4 baseColor = FinalColor;
+                float4 baseColor = _BaseColor;
 
 				float refl2Refr = Fresnel(direction, float3(0.0f,1.0f,0.0f), FRESNEL_BIAS, FRESNEL_POWER);
 		
@@ -193,13 +177,21 @@
 				float spec = max(0.0,pow (nh, _Shininess));
 
 				// base, depth & reflection colors
+				// float4 reflectionColor = lerp (rtReflections,_ReflectionColor,_ReflectionColor.a);
 				float4 reflectionColor = _ReflectionColor;
-				//baseColor = lerp (lerp (rtRefractions, baseColor, baseColor.a), reflectionColor, refl2Refr);
-				baseColor = lerp (rtRefractions, baseColor, baseColor.a);
+				baseColor = lerp (lerp (rtRefractions, baseColor, baseColor.a), reflectionColor, refl2Refr);
+				// baseColor = lerp (rtRefractions, baseColor, baseColor.a);
 				baseColor = baseColor + spec * _SpecularColor;
 				
 				UNITY_APPLY_FOG(i.fogCoord, baseColor);
-				return baseColor;
+				
+                float4 FinalColor = float4(0.0, 0.0, 0.0, 0.0);
+				for (int i = 0; i < numStep; i++, rayPos += ds) {
+					float4 sample = sampleColor(rayPos, baseColor);
+					FinalColor.xyz += sample.xyz * sample.a * (1 - FinalColor.a);
+					FinalColor.a += sample.a * (1 - FinalColor.a);
+				}
+				return FinalColor;
 			}
 			ENDCG
 		}
